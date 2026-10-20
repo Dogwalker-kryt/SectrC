@@ -19,9 +19,9 @@ DEBUG_CXXFLAGS := -D_POSIX_C_SOURCE=200112L -g -O0 -fno-omit-frame-pointer
 DEBUG_LDFLAGS := -lcrypto
 
 # Source and object files
-SRCS := $(wildcard $(SRC_DIR)/*.c)
+SRCS := $(shell find $(SRC_DIR) -type f -name '*.c')
 
-OBJS := $(patsubst %.c,$(BUILD_DIR)/%.o,$(notdir $(SRCS)))
+OBJS := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRCS))
 
 # Default rule
 all: $(TARGET)
@@ -30,20 +30,17 @@ all: $(TARGET)
 $(TARGET): $(OBJS)
 	$(CXX) $(OBJS) -o $(TARGET) $(LDFLAGS)
 
-# i dont know waht this is
-VPATH := $(SRC_DIR)
-
-# Compile each .cpp into .o
-$(BUILD_DIR)/%.o: %.c
-	@mkdir -p $(BUILD_DIR)
+# Compile each source file into a matching object path
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Debug build
-$(DEBUG_BUILD_DIR)/%.o: %.c
-	@mkdir -p $(DEBUG_BUILD_DIR)
+$(DEBUG_BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(@D)
 	$(CXX) $(DEBUG_CXXFLAGS) -c $< -o $@
 
-debug: $(patsubst %.c,$(DEBUG_BUILD_DIR)/%.o,$(notdir $(SRCS)))
+debug: $(patsubst $(SRC_DIR)/%.c,$(DEBUG_BUILD_DIR)/%.o,$(SRCS))
 	$(CXX) $^ -o $(TARGET)_debug $(DEBUG_LDFLAGS)
 
 # Clean build artifacts
