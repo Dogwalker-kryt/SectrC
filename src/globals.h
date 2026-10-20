@@ -1,12 +1,14 @@
 #pragma once
 
-#include <defs.h>
+#include "defs.h"
+#include "path/sectr_path.h"
 
-_bool g_bypass_security_code = FALSE;
-_bool g_no_log = FALSE;
-_bool g_no_color = FALSE;
-_bool g_stand_alone = FALSE;
+typedef struct globals {
+    bool bypass_security_code;
+    bool no_log;
+    bool no_color;
+    bool stand_alone;
 
-// dmgr_root;
-// log_path;
-// config_path;
+    path_t log_path;
+    path_t config_path;
+} globals;

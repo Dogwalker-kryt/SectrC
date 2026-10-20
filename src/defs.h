@@ -8,6 +8,8 @@
 #include <unistd.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <limits.h>
+#include <sys/types.h>
 #include "color.h"
 
 typedef __UINTPTR_TYPE__ __uintptr_t;
@@ -15,6 +17,14 @@ typedef __UINTPTR_TYPE__ __uintptr_t;
 #define DEV_SUFFIX "_dev"
 #define NEW_TERMINAL_SCREEN "\033[?1049h"
 #define LEAVE_TERMINAL_SCREEN "\033[?1049l"
+
+#define PATH_MAX 4096
+
+#define _POSIX_C_SOURCE 200112L
+
+#define LOG_PATH_SLICE "/data/log.dat"
+#define CONFIG_PATH_SLICE "/data/config.conf"
+
 
 typedef struct drive_metadata_t {
     char *name;

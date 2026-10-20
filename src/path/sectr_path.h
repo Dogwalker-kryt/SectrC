@@ -4,7 +4,7 @@
 #include <sys/statfs.h>
 #include <dirent.h>
 #include <fcntl.h>
-#include "defs.h"
+#include "../defs.h"
 
 typedef struct path_t {
     char *path;
@@ -15,3 +15,4 @@ typedef struct path_t {
 
 path_t path_init(const char *path, const char *def);
 
+char *elf_run_path();

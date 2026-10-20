@@ -11,11 +11,11 @@ DEBUG_BUILD_DIR := build_debug
 TARGET := ox
 
 # Flags
-CXXFLAGS := -std=c17
+CXXFLAGS := -D_POSIX_C_SOURCE=200112L
 LDFLAGS := -flto -s -fopt-info-inline -O3 -lcrypto
 
 # Debug flags
-DEBUG_CXXFLAGS := -std=c17 -g -O0 -fno-omit-frame-pointer
+DEBUG_CXXFLAGS := -D_POSIX_C_SOURCE=200112L -g -O0 -fno-omit-frame-pointer
 DEBUG_LDFLAGS := -lcrypto
 
 # Source and object files
@@ -55,5 +55,5 @@ run: all
 	./$(TARGET)
 
 run_debug: debug
-	./$(TARGET)
+	./$(TARGET)_debug
 

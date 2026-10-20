@@ -14,3 +14,16 @@ path_t path_init(const char *path, const char *def) {
     return path_obj;
 }
 
+char *elf_run_path() {
+    char path[PATH_MAX];
+    ssize_t len = readlink("/proc/self/exe", path,  sizeof(path) - 1);
+
+    if (len == -1) {
+        // TODO: ERR() es LOG_ERR()
+        return NULL;
+    }
+
+    path[len] = '\0';
+
+    return path;
+}
