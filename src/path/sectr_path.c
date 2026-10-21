@@ -4,22 +4,27 @@ path_t path_init(const char *path, const char *def) {
     path_t path_obj = { NULL, NULL, -1 };
 
     if (__builtin_expect(path == NULL, 0)) {
-        return ;
+        return path_obj;
     }
 
-    path_obj.path = strdup(path);
-    path_obj.def = def ? strdup(def) : NULL;
+    path_obj.path = __builtin_strdup(path);
+    path_obj.def = def ? __builtin_strdup(def) : NULL;
     path_obj.fd = -1;
 
     return path_obj;
 }
 
 char *elf_run_path() {
-    char path[PATH_MAX];
-    ssize_t len = readlink("/proc/self/exe", path,  sizeof(path) - 1);
+    char *path = malloc(PATH_MAX);
+    if (path == NULL) {
+        return NULL;
+    }
+
+    ssize_t len = readlink("/proc/self/exe", path, PATH_MAX - 1);
 
     if (len == -1) {
         // TODO: ERR() es LOG_ERR()
+        free(path);
         return NULL;
     }
 

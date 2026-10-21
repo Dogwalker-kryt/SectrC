@@ -45,7 +45,7 @@ debug: $(patsubst $(SRC_DIR)/%.c,$(DEBUG_BUILD_DIR)/%.o,$(SRCS))
 
 # Clean build artifacts
 clean:
-	rm -rf $(BUILD_DIR)/*.o $(DEBUG_BUILD_DIR)/*.o $(TARGET) $(TARGET)_debug
+	rm -rf $(BUILD_DIR) $(DEBUG_BUILD_DIR) $(TARGET) $(TARGET)_debug
 
 # Run the program
 run: all

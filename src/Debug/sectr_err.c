@@ -1,0 +1,46 @@
+#include "sectr_err.h"
+
+err_val_t err_val = {
+    -1,
+    NULL,
+    "\0"
+};
+
+char *errorMessage(int code) {
+    switch (code) {
+        case ERRC_PermissionDenied: return "Permission denied";
+        case ERRC_DeviceNotFound: return "Device not found";
+        case ERRC_IOError: return "I/O Error";
+        case ERRC_InvalidDevice: return "Invalid device";
+        case ERRC_DeviceBusy: return "Device busy";
+        case ERRC_InvalidInput: return "Invalid input";
+        case ERRC_OutOfRange: return "Value out of range";
+        case ERRC_ProcessFailure: return "Process failed to execute/load";
+        case ERRC_FileNotFound: return "File not found";
+        case ERRC_CorruptedData: return "Data is corrupted";
+        case ERRC_DataUnavailable: return "Data is unavailable";
+        case ERRC_NoInput: return "Input was empty";
+        case ERRC_FailedInput: return "Input failed";
+        case ERRC_AllocationFault: return "Allocation failed";
+        default: return "Unknown Error";
+    }
+}
+
+void set_err_vals(int code, const char *extra_msg) {
+    err_val.errc = code;
+    err_val.std_err_buff = errorMessage(code);
+
+    strncpy(err_val.err_buff, extra_msg, ERR_BUFF_SIZE);
+    size_t len = strlen(extra_msg);
+    err_val.err_buff[len] = '\0';
+}
+
+
+int printError(const char *file, int line, const char *func) {
+    
+    fprintf(stderr, "%s[ERROR]%s %s (%s:%d, %s) - %s\n", RED, RST, err_val.std_err_buff, file, line, func, err_val.err_buff);
+
+    set_err_vals(-1, "\0");
+    
+    return 1;
+}
