@@ -26,13 +26,14 @@ char *errorMessage(int code) {
     }
 }
 
-void set_err_vals(int code, const char *extra_msg) {
+void set_err_vals(enum ErrorCode code, const char *fmt, ...) {
     err_val.errc = code;
     err_val.std_err_buff = errorMessage(code);
 
-    strncpy(err_val.err_buff, extra_msg, ERR_BUFF_SIZE);
-    size_t len = strlen(extra_msg);
-    err_val.err_buff[len] = '\0';
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(err_val.err_buff, sizeof err_val.err_buff, fmt, args);
+    va_end(args);
 }
 
 

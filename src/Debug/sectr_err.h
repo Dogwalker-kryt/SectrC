@@ -34,10 +34,10 @@ extern err_val_t err_val;
 
 char *errorMessage(int code);
 
-void set_err_vals(int code, const char *extra_msg);
+void set_err_vals(enum ErrorCode code, const char *fmt, ...);
 
 int printError(const char *file, int line, const char *func);
 
-#define ERR(code, extra_msg) set_err_vals(code, extra_msg)
+#define ERR(code, ...) set_err_vals((code), __VA_ARGS__)
 
 #define PERR() printError(__FILE__, __LINE__, __func__)

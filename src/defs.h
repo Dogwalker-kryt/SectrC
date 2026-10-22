@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <limits.h>
+#include <stdarg.h>
 #include <sys/types.h>
 #include "color.h"
 

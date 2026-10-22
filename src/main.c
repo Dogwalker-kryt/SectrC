@@ -23,9 +23,5 @@ int main(int argc, char **argv, char **envp) {
     globals _g;
     set_globals(&_g);
 
-    ERR(ERRC_IOError, "test");
-
-    PERR();
-
     return EXIT_SUCCESS;
 }
