@@ -25,7 +25,7 @@ enum ErrorCode {
 
 typedef struct err_val_t {
     int errc;
-    char *std_err_buff;
+    const char *std_err_buff;
     char err_buff[ERR_BUFF_SIZE];
 
 } err_val_t;
@@ -34,10 +34,10 @@ extern err_val_t err_val;
 
 char *errorMessage(int code);
 
-void set_err_vals(enum ErrorCode code, const char *fmt, ...);
+void set_err_vals(enum ErrorCode code, const char *std_err_msg, const char *fmt, ...);
 
-int printError(const char *file, int line, const char *func);
+int printError_chk(const char *file, int line, const char *func);
 
 #define ERR(code, ...) set_err_vals((code), __VA_ARGS__)
 
-#define PERR() printError(__FILE__, __LINE__, __func__)
+#define PERR() printError_chk(__FILE__, __LINE__, __func__)

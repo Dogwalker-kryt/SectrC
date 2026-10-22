@@ -1,24 +1,29 @@
 #include "arg_pars.h"
 
-void parse_args(int argc, char **argv, const args_t *arg_arr) {
-    for (size_t i = 0; i < argc; ++i) {
+bool parse_args(int argc, char **argv, const args_t *arg_arr, size_t arg_count) {
+    if (unlikely(argc < 2)) return false;
+    
+    for (int i = 1; i < argc; ++i) {
+        bool matched = false;
 
-        for (size_t arr_idx = 0; arr_idx < sizeof(arg_arr); ++arr_idx) {
+        for (size_t arr_idx = 0; arr_idx < arg_count; ++arr_idx) {
+            const char *argv_i = argv[i];
+            const args_t *arg = &arg_arr[arr_idx];
 
-            char *argv_i = argv[i];
-            if (strcmp(argv_i, arg_arr[arr_idx].long_arg) == 0 || strcmp(argv_i, arg_arr[arr_idx].short_arg)) {
-
-                arg_arr[arr_idx].func(argc, argv);
+            if ((arg->long_arg && strcmp(argv_i, arg->long_arg) == 0) ||(arg->short_arg && strcmp(argv_i, arg->short_arg) == 0)) {
+                if (arg->func) {
+                    arg->func(argc, argv);
+                }
+                matched = true;
                 break;
-
             }
+        }
 
-            const char *msg = "No matching arg flag for '";
-            char buff[128];
-            strncpy(buff, msg, 128);
-            strncpy(buff, argv_i, strlen(msg));
-
-            ERR(ERRC_OutOfRange, "No matching arg flag for '");
+        if (!matched) {
+            ERR(ERRC_OutOfRange, NULL, "No matching arg flag for '%s' found", argv[i]);
+            return false;
         }
     }
+
+    return true;
 }

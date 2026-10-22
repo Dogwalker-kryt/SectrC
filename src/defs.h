@@ -28,6 +28,8 @@ typedef __UINTPTR_TYPE__ __uintptr_t;
 #define LOG_PATH_SLICE "/data/log.dat"
 #define CONFIG_PATH_SLICE "/data/config.conf"
 
+#define unlikely(expr) __builtin_expect(!!(expr), 0)
+#define likely(expr)   __builtin_expect(!!(expr), 1)
 
 typedef struct drive_metadata_t {
     char *name;

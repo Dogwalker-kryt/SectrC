@@ -17,4 +17,4 @@ typedef struct args_t {
 
 } args_t;
 
-void parse_args(int argc, char **argv, const args_t *arg_arr);
+bool parse_args(int argc, char **argv, const args_t *arg_arr, size_t arg_count);

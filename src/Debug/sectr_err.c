@@ -26,9 +26,9 @@ char *errorMessage(int code) {
     }
 }
 
-void set_err_vals(enum ErrorCode code, const char *fmt, ...) {
+void set_err_vals(enum ErrorCode code, const char *std_err_msg, const char *fmt, ...) {
     err_val.errc = code;
-    err_val.std_err_buff = errorMessage(code);
+    err_val.std_err_buff = std_err_msg ? std_err_msg : errorMessage(code);
 
     va_list args;
     va_start(args, fmt);
@@ -37,11 +37,11 @@ void set_err_vals(enum ErrorCode code, const char *fmt, ...) {
 }
 
 
-int printError(const char *file, int line, const char *func) {
-    
-    fprintf(stderr, "%s[ERROR]%s %s (%s:%d, %s) - %s\n", RED, RST, err_val.std_err_buff, file, line, func, err_val.err_buff);
-
-    set_err_vals(-1, "\0");
+int printError_chk(const char *file, int line, const char *func) {
+    if (err_val.errc != -1) {
+        fprintf(stderr, "%s[ERROR]%s %s (%s:%d, %s) - %s\n", RED, RST, err_val.std_err_buff, file, line, func, err_val.err_buff);
+        set_err_vals(-1, NULL, "\0");
+    }
     
     return 1;
 }
