@@ -18,6 +18,8 @@ typedef __UINTPTR_TYPE__ __uintptr_t;
 #define NEW_TERMINAL_SCREEN "\033[?1049h"
 #define LEAVE_TERMINAL_SCREEN "\033[?1049l"
 
+#define KiB 1024
+
 #define PATH_MAX 4096
 
 #define _POSIX_C_SOURCE 200112L

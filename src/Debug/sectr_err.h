@@ -21,7 +21,7 @@ enum ErrorCode {
     ERRC_Undefined
 };
 
-#define ERR_BUFF_SIZE 1024
+#define ERR_BUFF_SIZE KiB
 
 typedef struct err_val_t {
     int errc;
