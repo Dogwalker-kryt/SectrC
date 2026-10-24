@@ -1,10 +1,15 @@
 #include "sectr_helper/sectr_helper.h"
 #include "arg_parser/arg_pars.hpp"
 
+void free_paths() {
+    free_path(&globals.log_path);
+    free_path(&globals.config_path);
+}
+
 void help(int argc, char **argv, const args_t *arg_arr) {
     (void)argc;
 
-    printf("%sUsage: %s%s -fs.<filesystem> <device> [options]\n", BOLD, argv[0], RST);
+    printf("%sUsage: %s%s -<operation> <device> [options]\n", BOLD, argv[0], RST);
     puts("  Only one operation may be specified.");
     puts("  -c, --confirm                    confirm the operation");
     puts("  -nl, --no-log                    disable logging");
@@ -19,7 +24,8 @@ void help(int argc, char **argv, const args_t *arg_arr) {
 
 
 int main(int argc, char **argv, char **envp) {
-    
+    atexit(free_paths);
+
     const args_t arg_arr[] = {
         {"--help", "-h", "shows all avilable/valid flags", NOT_REQUIRE_ARG, [&argc, &argv, &arg_arr](){help(argc, argv, arg_arr);}, EXIT_AFTER},
         {"--version", "-v", "show current version of the sectr", NOT_REQUIRE_ARG, [](){printf("%sSectrC version%s: %s%s%s\n", BOLD, RST, BOLD, "no", RST);}, EXIT_AFTER},
@@ -29,14 +35,13 @@ int main(int argc, char **argv, char **envp) {
 
     if (argc < 2) {
         help(argc, argv, arg_arr);
-        return EXIT_SUCCESS;
+        exit(EXIT_SUCCESS);
     }
 
-    if (!parse_args(argc, argv, NULL, arg_arr, SIZEOF_ARRAY(arg_arr))) {
+    if (!parse_args(argc, argv, arg_arr, SIZEOF_ARRAY(arg_arr))) {
         PERR();
-        return EXIT_FAILURE;
+        exit(EXIT_FAILURE);
     }
 
-
-    return EXIT_SUCCESS;
+    exit(EXIT_SUCCESS);
 }
