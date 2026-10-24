@@ -6,7 +6,7 @@ err_val_t err_val = {
     "\0"
 };
 
-char *errorMessage(int code) {
+const char *errorMessage(int code) {
     switch (code) {
         case ERRC_PermissionDenied: return "Permission denied";
         case ERRC_DeviceNotFound: return "Device not found";
@@ -22,6 +22,7 @@ char *errorMessage(int code) {
         case ERRC_NoInput: return "Input was empty";
         case ERRC_FailedInput: return "Input failed";
         case ERRC_AllocationFault: return "Allocation failed";
+        case ERRC_ZERO: return NULL;
         default: return "Unknown Error";
     }
 }
@@ -40,7 +41,7 @@ void set_err_vals(enum ErrorCode code, const char *std_err_msg, const char *fmt,
 int printError_chk(const char *file, int line, const char *func) {
     if (err_val.errc != -1) {
         fprintf(stderr, "%s[ERROR]%s %s (%s:%d, %s) - %s\n", RED, RST, err_val.std_err_buff, file, line, func, err_val.err_buff);
-        set_err_vals(-1, NULL, "\0");
+        set_err_vals(ERRC_ZERO, NULL, "\0");
     }
     
     return 1;

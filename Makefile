@@ -1,5 +1,5 @@
 # Compiler
-CXX := gcc
+CXX := g++
 
 # Directories
 SRC_DIR := src
@@ -12,16 +12,17 @@ TARGET := ox
 
 # Flags
 CXXFLAGS := -D_POSIX_C_SOURCE=200112L
-LDFLAGS := -flto -s -fopt-info-inline -O3 -lcrypto
+LDFLAGS := -flto -s -O3 -lcrypto
 
 # Debug flags
 DEBUG_CXXFLAGS := -D_POSIX_C_SOURCE=200112L -g -O0 -fno-omit-frame-pointer
 DEBUG_LDFLAGS := -lcrypto
 
 # Source and object files
-SRCS := $(shell find $(SRC_DIR) -type f -name '*.c')
+SRCS := $(shell find $(SRC_DIR) -type f -name '*.c') $(shell find $(SRC_DIR) -type f -name '*.cpp')
 
-OBJS := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRCS))
+OBJS := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(filter %.c,$(SRCS)))
+OBJS += $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(filter %.cpp,$(SRCS)))
 
 # Default rule
 all: $(TARGET)
@@ -35,12 +36,20 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(@D)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
 # Debug build
 $(DEBUG_BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(@D)
 	$(CXX) $(DEBUG_CXXFLAGS) -c $< -o $@
 
-debug: $(patsubst $(SRC_DIR)/%.c,$(DEBUG_BUILD_DIR)/%.o,$(SRCS))
+$(DEBUG_BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(@D)
+	$(CXX) $(DEBUG_CXXFLAGS) -c $< -o $@
+
+debug: $(patsubst $(SRC_DIR)/%.c,$(DEBUG_BUILD_DIR)/%.o,$(filter %.c,$(SRCS))) $(patsubst $(SRC_DIR)/%.cpp,$(DEBUG_BUILD_DIR)/%.o,$(filter %.cpp,$(SRCS)))
 	$(CXX) $^ -o $(TARGET)_debug $(DEBUG_LDFLAGS)
 
 # Clean build artifacts

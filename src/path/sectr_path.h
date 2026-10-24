@@ -15,4 +15,6 @@ typedef struct path_t {
 
 path_t path_init(const char *path, const char *def);
 
+#define PATH_INIT_DEFAULT path_init(NULL, NULL)
+
 char *elf_run_path();

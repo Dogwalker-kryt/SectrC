@@ -18,7 +18,8 @@ enum ErrorCode {
     ERRC_FailedInput,
     ERRC_AllocationFault,
     ERRC_Unknown, 
-    ERRC_Undefined
+    ERRC_Undefined,
+    ERRC_ZERO = -1
 };
 
 #define ERR_BUFF_SIZE KiB
@@ -32,7 +33,7 @@ typedef struct err_val_t {
 
 extern err_val_t err_val;
 
-char *errorMessage(int code);
+const char *errorMessage(int code);
 
 void set_err_vals(enum ErrorCode code, const char *std_err_msg, const char *fmt, ...);
 

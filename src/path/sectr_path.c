@@ -15,12 +15,12 @@ path_t path_init(const char *path, const char *def) {
 }
 
 char *elf_run_path() {
-    char *path = malloc(PATH_MAX);
+    char *path = (char*)malloc(PATH_MAX);
     if (path == NULL) {
         return NULL;
     }
 
-    ssize_t len = readlink("/proc/self/exe", path, PATH_MAX - 1);
+    __uint64_t len = readlink("/proc/self/exe", path, PATH_MAX - 1);
 
     if (len == -1) {
         // TODO: ERR() es LOG_ERR()
