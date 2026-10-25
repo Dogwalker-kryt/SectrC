@@ -16,7 +16,7 @@ void close_log_file(void) {
     fclose(globals.log_path.fd);
 }
 
-static char *log_messgae(enum LOG_TYPE log_type) {
+static const char *log_messgae(enum LOG_TYPE log_type) {
     switch (log_type) {
         case logt_err:
             return "[ERROR] ";
@@ -39,4 +39,11 @@ static char *get_time(void) {
     static char time_str[26];
     strftime(time_str, sizeof(time_str), "%d-%m-%Y %H:%M:%S", &local);
     return time_str;
+}
+
+void log(enum LOG_TYPE log_type, const char *msg, const char *func) {
+    char *time_str = get_time();
+    const char *log_type_str = log_messgae(log_type);
+
+    fprintf(globals.log_path.fd, "%s%s%s%s%s%s\n", time_str, log_type_str, msg, " (location: ", func, ")");
 }

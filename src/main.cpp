@@ -25,8 +25,10 @@ void help(int argc, char **argv, const args_t *arg_arr) {
 
 
 int main(int argc, char **argv, char **envp) {
-    atexit(free_paths);
+    // atexit(free_paths);
     atexit(close_log_file);
+
+    set_globals();
 
     if (!open_log_file()) {
         PERR();

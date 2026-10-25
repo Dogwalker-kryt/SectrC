@@ -14,3 +14,21 @@ typedef struct globals_t {
 } globals_t;
 
 extern globals_t globals;
+
+char *build_path_beside_exe(const char *suffix);
+
+__always_inline void set_globals(void) {
+    globals.bypass_security_code = false;
+    globals.no_log = false;
+    globals.no_color = false;
+    globals.stand_alone = false;
+
+    char *log = build_path_beside_exe("/log.txt");
+    char *cfg = build_path_beside_exe("/config.json");
+
+    globals.log_path.path = log;
+    globals.config_path.path = cfg;
+
+    free(log);
+    free(cfg);
+} 
