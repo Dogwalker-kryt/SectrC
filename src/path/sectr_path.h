@@ -10,7 +10,7 @@
 typedef struct path_t {
     char *path;
     char *def;
-    int fd;
+    FILE *fd;
 
 } path_t;
 

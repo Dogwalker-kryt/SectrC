@@ -19,6 +19,7 @@ enum ErrorCode {
     ERRC_AllocationFault,
     ERRC_Unknown, 
     ERRC_Undefined,
+    ERRC_TimeFailure,
     ERRC_ZERO = -1
 };
 

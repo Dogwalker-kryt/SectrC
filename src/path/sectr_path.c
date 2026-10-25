@@ -1,7 +1,7 @@
 #include "sectr_path.h"
 
 path_t path_init(const char *path, const char *def) {
-    path_t path_obj = { NULL, NULL, -1 };
+    path_t path_obj = { NULL, NULL, NULL };
 
     if (unlikely(path == NULL)) {
         return path_obj;
@@ -9,7 +9,7 @@ path_t path_init(const char *path, const char *def) {
 
     path_obj.path = __builtin_strdup(path);
     path_obj.def = def ? __builtin_strdup(def) : NULL;
-    path_obj.fd = -1;
+    path_obj.fd = NULL;
 
     return path_obj;
 }
@@ -44,10 +44,11 @@ void free_path(path_t *path_obj) {
     if (likely(path_obj->path)) {
         free(path_obj->path);
         path_obj->path = NULL;
+        fclose(path_obj->fd);
     }
 
     path_obj->def = NULL;
-    path_obj->fd = -1;
+    path_obj->fd = NULL;
 }
 
 void free_paths(path_t *log_path, path_t *config_path) {

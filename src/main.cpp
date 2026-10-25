@@ -1,4 +1,5 @@
 #include "sectr_helper/sectr_helper.h"
+#include "Debug/sectr_debug.h"
 #include "arg_parser/arg_pars.hpp"
 
 void free_paths() {
@@ -25,6 +26,12 @@ void help(int argc, char **argv, const args_t *arg_arr) {
 
 int main(int argc, char **argv, char **envp) {
     atexit(free_paths);
+    atexit(close_log_file);
+
+    if (!open_log_file()) {
+        PERR();
+        exit(EXIT_FAILURE);
+    }
 
     const args_t arg_arr[] = {
         {"--help", "-h", "shows all avilable/valid flags", NOT_REQUIRE_ARG, [&argc, &argv, &arg_arr](){help(argc, argv, arg_arr);}, EXIT_AFTER},
