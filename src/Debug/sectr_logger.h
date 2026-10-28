@@ -20,3 +20,7 @@ void log(enum LOG_TYPE log_type, const char *msg, const char *func);
 #define LOG_ERR(msg) log(logt_err, msg, __func__)
 #define LOG_WARN(msg) log(logt_warn, msg, __func__)
 #define LOG_INFO(msg) log(logt_info, msg, __func__)
+
+void clear_logs(void);
+void view_logs(void);
+

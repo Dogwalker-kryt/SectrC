@@ -29,6 +29,8 @@ typedef __UINTPTR_TYPE__ __uintptr_t;
 
 #define PATH_MAX 4096
 
+typedef __UINT_FAST64_TYPE__ __uint_fast64;
+
 // #define _POSIX_C_SOURCE 200112L
 
 #define LOG_PATH_SLICE "/data/log.dat"
