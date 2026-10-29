@@ -1,4 +1,5 @@
 #include "sectr_path.h"
+#include "../Debug/sectr_err.h"
 
 path_t path_init(const char *path, const char *def) {
     path_t path_obj = { NULL, NULL, NULL };

@@ -1,4 +1,5 @@
 #include "globals.h"
+#include "Debug/sectr_err.h"
 
 globals_t globals = {
     false, false, false, false,

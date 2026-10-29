@@ -1,5 +1,5 @@
 #include "sectr_helper/sectr_helper.h"
-#include "Debug/sectr_debug.h"
+#include "Debug/sectr_err.h"
 #include "arg_parser/arg_pars.hpp"
 
 void free_paths(void) {
@@ -40,7 +40,7 @@ int main(int argc, char **argv, char **envp) {
         {"--help", "-h", "shows all avilable/valid flags", NOT_REQUIRE_ARG, [&argc, &argv, &arg_arr](){help(argc, argv, arg_arr);}, EXIT_AFTER},
         {"--version", "-v", "show current version of the sectr", NOT_REQUIRE_ARG, [](){printf("%sSectrC version%s: %s%s%s\n", BOLD, RST, BOLD, "no", RST);}, EXIT_AFTER},
         {"--no-color", "-nc", "disables colors ", NOT_REQUIRE_ARG, [](){globals.no_color = true;}, NOT_EXIT_AFTER},
-        {"--view-logs", "-vl", "view log messages", NOT_REQUIRE_ARG, [](){ view_logs(); }, EXIT_AFTER},
+        {"--view-logs", "-vl", "view log messages", NOT_REQUIRE_ARG, [](){ view_logs(0); }, EXIT_AFTER},
         {"--clear-logs", "-cl", "clear log file", NOT_REQUIRE_ARG, [](){ clear_logs(); }, EXIT_AFTER},
     };
 

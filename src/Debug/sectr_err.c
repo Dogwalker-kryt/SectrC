@@ -38,11 +38,37 @@ void set_err_vals(enum ErrorCode code, const char *std_err_msg, const char *fmt,
 }
 
 
-int printError_chk(const char *file, int line, const char *func) {
-    if (err_val.errc != -1) {
-        fprintf(stderr, "%s[ERROR]%s %s (%s:%d, %s) - %s\n", RED, RST, err_val.std_err_buff, file, line, func, err_val.err_buff);
-        set_err_vals(ERRC_ZERO, NULL, "\0");
+int printError_chk(const char *file, __int32_t line, const char *func) {
+    if (unlikely(err_val.errc == -1)) { return 1; }
+
+    const char *std_err = err_val.std_err_buff ? err_val.std_err_buff : "";
+    const char *err     = err_val.err_buff ? err_val.err_buff : "";
+    const char *srcfile = file ? file : "";
+    const char *srcfunc = func ? func : "";
+    const char *fmt = "%s (%s:%d, %s) - %s";
+
+    __int32_t len = snprintf(NULL, 0, fmt, std_err, srcfile, line, srcfunc, err);
+
+    if (likely(len >= 0)) {
+        char *msg = (char*)malloc((__uint64_t)len + 1);
+
+        if (likely(msg != NULL)) {
+
+            snprintf(msg, (__uint64_t)len + 1, fmt, std_err, srcfile, line, srcfunc, err);
+            fprintf(stderr, "%s[ERROR]%s %s\n", RED, RST, msg);
+            LOG_ERR(msg);
+
+        } else {
+            LOG_ERR(err);
+        }
+
+        free(msg);
+
+    } else {
+        LOG_ERR(err);
     }
+
+    set_err_vals(ERRC_ZERO, NULL, "");
     
     return 1;
 }

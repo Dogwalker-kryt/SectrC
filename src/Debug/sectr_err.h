@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../defs.h"
+#include "sectr_logger.h"
 
 enum ErrorCode {
     ERRC_PermissionDenied,
@@ -40,6 +41,7 @@ void set_err_vals(enum ErrorCode code, const char *std_err_msg, const char *fmt,
 
 int printError_chk(const char *file, int line, const char *func);
 
+// ERR will automaticly execute a LOG_ERR, if no_log was is false
 #define ERR(code, ...) set_err_vals((code), __VA_ARGS__)
 
 #define PERR() printError_chk(__FILE__, __LINE__, __func__)

@@ -5,7 +5,6 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include "../defs.h"
-#include "../Debug/sectr_err.h"
 
 typedef struct path_t {
     char *path;
