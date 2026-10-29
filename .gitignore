@@ -1,2 +1,5 @@
 /build
 *.o
+LICENSE
+ox
+/.vscode
