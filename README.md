@@ -11,12 +11,14 @@ Sectr-ctl is a Linux storage-management project intended to make disk workflows 
 ```text
 ./ox --help, -h          Show usage and available options
 ./ox --no-color, -nc     Disable colored output
-./ox --view-logs, -vl    Display log messages
+./ox --view-logs, -vl [N]  Display all log messages, or the last N lines
 ./ox --clear-logs, -cl   Clear the log file
 ./ox --version, -v       Print the version field (currently a placeholder)
 ```
 
 The parser currently accepts one or more recognized flags. Although some planned flags may appear in the general usage text, only use options listed by the current program's `--help` output.
+
+For example, `./ox --view-logs 20` shows the last 20 lines, while `./ox --view-logs` shows the full log.
 
 ## Requirements
 

@@ -1,7 +1,7 @@
 #include "sectr_logger.h"
 
 bool open_log_file(void) {
-    FILE *log_file = fopen(globals.log_path.path, "a");
+    FILE *log_file = fopen(globals.log_path.path, "a+");
 
     if (log_file == NULL) {
         fprintf(stderr, "Failed to open file: %s%s%s\n", BOLD, globals.log_path.path, RST);

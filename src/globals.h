@@ -28,7 +28,12 @@ __always_inline void set_globals(void) {
 
     globals.log_path.path = log;
     globals.config_path.path = cfg;
-
-    free(log);
-    free(cfg);
 } 
+
+void set_bsc_true();
+
+void set_nolog_true();
+
+void set_nocolor_true();
+
+void set_standalone_true();

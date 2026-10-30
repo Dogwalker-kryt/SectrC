@@ -1,58 +1,121 @@
 #include "sectr_helper/sectr_helper.h"
 #include "Debug/sectr_err.h"
 #include "arg_parser/arg_pars.hpp"
+#include <errno.h>
 
-void free_paths(void) {
-    free_path(&globals.log_path);
-    free_path(&globals.config_path);
-}
+#define SECTRC_VERSION "development"
 
+typedef struct help_context_t {
+    const args_t *options;
+    size_t option_count;
+    const char *program_name;
+} help_context_t;
 
-void help(int argc, char **argv, const args_t *arg_arr) {
-    (void)argc;
+static help_context_t help_context;
 
-    printf("%sUsage: %s%s -<operation> <device> [options]\n", BOLD, argv[0], RST);
-    puts("  Only one operation may be specified.");
-    puts("  -c, --confirm                    confirm the operation");
-    puts("  -nl, --no-log                    disable logging");
-    puts("  -nc, --no-color                  disable colored output");
-    puts("  -sa, --stand-alone               run in standalone mode");
-    puts("  -bsc, --bypass-security-code     bypass the security-code check");
+static bool handle_help(const char *value, void *context) {
+    (void)value;
+    const help_context_t *help = (const help_context_t *)context;
 
-    for (__uint64_t i = 0; i < SIZEOF_ARRAY(arg_arr); ++i) {
-        printf("  %s, %s      %s\n", arg_arr[i].long_arg, arg_arr[i].short_arg, arg_arr[i].describtion);
+    printf("%sUsage:%s %s [options]\n\nOptions:\n", BOLD, RST, help->program_name);
+    for (size_t i = 0; i < help->option_count; ++i) {
+
+        const args_t *arg = &help->options[i];
+        printf("  %-18s %-6s", arg->long_arg, arg->short_arg);
+
+        if (arg->value_mode == ARG_REQ_REQUIRED_VALUE) {
+
+            printf(" <%s>", arg->value_name ? arg->value_name : "value");
+
+        } else if (arg->value_mode == ARG_REQ_OPTIONAL_VALUE) {
+
+            printf(" [%s]", arg->value_name ? arg->value_name : "value");
+
+        }
+        printf("\t%s\n", arg->description ? arg->description : "");
     }
+    return true;
+}
+
+static bool print_version(const char *value, void *context) {
+    (void)value;
+    (void)context;
+    printf("SectrC %s\n", SECTRC_VERSION);
+    return true;
+}
+
+static bool set_no_color_true(const char *value, void *context) {
+    (void)value;
+    (void)context;
+    globals.no_color = true;
+    return true;
+}
+
+static bool abstract_view_logs(const char *value, void *context) {
+    (void)context;
+    __uint64_t line_count = 0;
+
+    if (value) {
+        for (const char *digit = value; *digit; ++digit) {
+            if (*digit < '0' || *digit > '9') {
+                ERR(ERRC_InvalidInput, NULL, "Expected a non-negative line count, got '%s'", value);
+                return false;
+            }
+        }
+
+        char *end = NULL;
+        errno = 0;
+        unsigned long long parsed = strtoull(value, &end, 10);
+        if (errno == ERANGE || end == value || *end != '\0') {
+            ERR(ERRC_InvalidInput, NULL, "Expected a non-negative line count, got '%s'", value);
+            return false;
+        }
+        line_count = (__uint64_t)parsed;
+    }
+
+    view_logs(line_count);
+    return true;
+}
+
+static bool abstract_clear_logs(const char *value, void *context) {
+    (void)value;
+    (void)context;
+    clear_logs();
+    return true;
 }
 
 
-int main(int argc, char **argv, char **envp) {
-    // atexit(free_paths);
-    atexit(close_log_file);
+static const args_t arg_arr[] = {
+    {"--help", "-h", "Show this help message", NULL, ARG_REQ_NO_VALUE, handle_help, &help_context, true},
+    {"--version", "-v", "Show the current version", NULL, ARG_REQ_NO_VALUE, print_version, NULL, true},
+    {"--no-color", "-nc", "Disable colored output", NULL, ARG_REQ_NO_VALUE, set_no_color_true, NULL, false},
+    {"--view-logs", "-vl", "View log messages (default: all)", "lines", ARG_REQ_OPTIONAL_VALUE, abstract_view_logs, NULL, false},
+    {"--clear-logs", "-cl", "Clear the log file", NULL, ARG_REQ_NO_VALUE, abstract_clear_logs, NULL, false},
+};
 
+
+int main(int argc, char **argv) {
+    atexit(close_log_file);
     set_globals();
+
+    help_context.options = arg_arr;
+    help_context.option_count = SIZEOF_ARRAY(arg_arr);
+    help_context.program_name = argc > 0 ? argv[0] : "ox";
 
     if (!open_log_file()) {
         PERR();
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
-    const args_t arg_arr[] = {
-        {"--help", "-h", "shows all avilable/valid flags", NOT_REQUIRE_ARG, [&argc, &argv, &arg_arr](){help(argc, argv, arg_arr);}, EXIT_AFTER},
-        {"--version", "-v", "show current version of the sectr", NOT_REQUIRE_ARG, [](){printf("%sSectrC version%s: %s%s%s\n", BOLD, RST, BOLD, "no", RST);}, EXIT_AFTER},
-        {"--no-color", "-nc", "disables colors ", NOT_REQUIRE_ARG, [](){globals.no_color = true;}, NOT_EXIT_AFTER},
-        {"--view-logs", "-vl", "view log messages", NOT_REQUIRE_ARG, [](){ view_logs(0); }, EXIT_AFTER},
-        {"--clear-logs", "-cl", "clear log file", NOT_REQUIRE_ARG, [](){ clear_logs(); }, EXIT_AFTER},
-    };
-
     if (argc < 2) {
-        help(argc, argv, arg_arr);
-        exit(EXIT_SUCCESS);
+        handle_help(NULL, &help_context);
+        return EXIT_SUCCESS;
     }
 
     if (!parse_args(argc, argv, arg_arr, SIZEOF_ARRAY(arg_arr))) {
         PERR();
-        exit(EXIT_FAILURE);
+        return EXIT_FAILURE;
     }
 
-    exit(EXIT_SUCCESS);
+    return EXIT_SUCCESS;
 }

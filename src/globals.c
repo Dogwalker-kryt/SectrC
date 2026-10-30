@@ -11,25 +11,41 @@ char *build_path_beside_exe(const char *suffix) {
     char *exe = elf_run_path();
     if (!exe) return NULL;
 
-     char *slash = strrchr(exe, '/');
+    char *slash = strrchr(exe, '/');
     __uint64_t dir_len = slash ? (__uint64_t)(slash - exe) : 0;
 
-    char *out = (char*)malloc(PATH_MAX);
-    if (out == NULL) {
+    char *path_buffer = (char*)malloc(PATH_MAX);
+    if (path_buffer == NULL) {
         free(exe);
         ERR(ERRC_AllocationFault, "failed to build path", "malloc() failed");
         return NULL;
     }
 
-    int n = snprintf(out, PATH_MAX, "%.*s%s", (int)dir_len, exe, suffix);
+    int n = snprintf(path_buffer, PATH_MAX, "%.*s%s", (int)dir_len, exe, suffix);
     free(exe);
 
     if (n < 0 || (__uint64_t)n >= PATH_MAX) {
-        free(out);
+        free(path_buffer);
         ERR(ERRC_OutOfRange, "built path is too long", suffix);
         return NULL;
     }
 
-    return out;
+    return path_buffer;
+}
+
+void set_bsc_true() {
+    globals.bypass_security_code = true; 
+}
+
+void set_nolog_true() {
+    globals.no_log = true; 
+}
+
+void set_nocolor_true() {
+    globals.no_color = true; 
+}
+
+void set_standalone_true() {
+    globals.stand_alone = true; 
 }
 

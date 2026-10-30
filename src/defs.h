@@ -52,3 +52,5 @@ typedef struct drive_metadata_t {
     __uint16_t uuid;
 
 } drive_metadata_t;
+
+typedef bool (*arg_fn)(const char *value, void *context);
