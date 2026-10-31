@@ -1,6 +1,6 @@
 #include "sectr_helper/sectr_helper.h"
 #include "Debug/sectr_err.h"
-#include "arg_parser/arg_pars.hpp"
+#include "arg_parser/arg_pars.h"
 #include <errno.h>
 
 #define SECTRC_VERSION "development"
@@ -17,7 +17,7 @@ static bool handle_help(const char *value, void *context) {
     (void)value;
     const help_context_t *help = (const help_context_t *)context;
 
-    printf("%sUsage:%s %s [options]\n\nOptions:\n", BOLD, RST, help->program_name);
+    printf("%sUsage:%s %s [options]\n\n%sOptions%s:\n", BOLD, RST, help->program_name, BOLD, RST);
     for (size_t i = 0; i < help->option_count; ++i) {
 
         const args_t *arg = &help->options[i];
@@ -30,8 +30,8 @@ static bool handle_help(const char *value, void *context) {
         } else if (arg->value_mode == ARG_REQ_OPTIONAL_VALUE) {
 
             printf(" [%s]", arg->value_name ? arg->value_name : "value");
-
         }
+
         printf("\t%s\n", arg->description ? arg->description : "");
     }
     return true;

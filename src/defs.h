@@ -2,11 +2,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-// #include <stdint-gcc.h>
 #include <string.h>
-// #include <strings.h>
 #include <unistd.h>
-// #include <stddef.h>
 #include <stdbool.h>
 #include <limits.h>
 #include <stdarg.h>
@@ -14,6 +11,8 @@
 #include "color.h"
 
 typedef __UINTPTR_TYPE__ __uintptr_t;
+typedef __UINT_FAST64_TYPE__ __uint_fast64;
+
 
 #define DEV_SUFFIX "_dev"
 #define NEW_TERMINAL_SCREEN "\033[?1049h"
@@ -28,8 +27,6 @@ typedef __UINTPTR_TYPE__ __uintptr_t;
 #define KiB 1024
 
 #define PATH_MAX 4096
-
-typedef __UINT_FAST64_TYPE__ __uint_fast64;
 
 #define LOG_PATH_SLICE "/data/log.dat"
 #define CONFIG_PATH_SLICE "/data/config.conf"

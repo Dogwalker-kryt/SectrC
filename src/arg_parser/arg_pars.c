@@ -1,4 +1,4 @@
-#include "arg_pars.hpp"
+#include "arg_pars.h"
 
 static const args_t *find_arg(const char *token, __uint64_t name_length, const args_t *arg_arr, __uint64_t arg_count) {
     for (__uint64_t i = 0; i < arg_count; ++i) {
