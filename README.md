@@ -59,7 +59,9 @@ SectrC is under active development and should not be relied on for critical data
 
 ## Relationship to Sectr-ctl
 
-SectrC takes inspiration from the goals and functionality of [Sectr-ctl](https://github.com/Dogwalker-kryt/Sectr-ctl), while aiming for a smaller, mostly-C, CLI implementation. See the upstream project for its broader feature set and history. Features, options, configuration formats, and behavior may differ between the projects.
+SectrC is an independent rewrite of [Sectr-ctl](https://github.com/Dogwalker-kryt/Sectr-ctl), created by the same author. It shares the project's goals and is intended to provide a smaller, mostly-C command-line implementation, but its source was written again for SectrC; it does not contain code copied over from Sectr-ctl. SectrC is not a fork or a drop-in replacement. Features, options, configuration formats, and behavior may differ between the projects.
+
+The projects are licensed separately: Sectr-ctl is licensed under GPL-3.0, while SectrC is licensed under Apache-2.0 as stated below and in [LICENSE](LICENSE). Sectr-ctl's license applies to Sectr-ctl; SectrC's license applies to this repository.
 
 ## License
 
