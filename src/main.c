@@ -1,6 +1,7 @@
 #include "sectr_helper/sectr_helper.h"
 #include "Debug/sectr_err.h"
 #include "arg_parser/arg_pars.h"
+#include "read_sys_fs/read_sys_fs.h"
 #include <errno.h>
 
 #define SECTRC_VERSION "development"
@@ -95,27 +96,31 @@ static const args_t arg_arr[] = {
 
 
 int main(int argc, char **argv) {
-    atexit(close_log_file);
-    set_globals();
+    // atexit(close_log_file);
+    // set_globals();
 
-    help_context.options = arg_arr;
-    help_context.option_count = SIZEOF_ARRAY(arg_arr);
-    help_context.program_name = argc > 0 ? argv[0] : "ox";
+    // help_context.options = arg_arr;
+    // help_context.option_count = SIZEOF_ARRAY(arg_arr);
+    // help_context.program_name = argc > 0 ? argv[0] : "ox";
 
-    if (!open_log_file()) {
-        PERR();
-        return EXIT_FAILURE;
-    }
+    // if (!open_log_file()) {
+    //     PERR();
+    //     return EXIT_FAILURE;
+    // }
 
-    if (argc < 2) {
-        handle_help(NULL, &help_context);
-        return EXIT_SUCCESS;
-    }
+    // if (argc < 2) {
+    //     handle_help(NULL, &help_context);
+    //     return EXIT_SUCCESS;
+    // }
 
-    if (!parse_args(argc, argv, arg_arr, SIZEOF_ARRAY(arg_arr))) {
-        PERR();
-        return EXIT_FAILURE;
-    }
+    // if (!parse_args(argc, argv, arg_arr, SIZEOF_ARRAY(arg_arr))) {
+    //     PERR();
+    //     return EXIT_FAILURE;
+    // }
+
+    __uint64_t l = read_sysfs_uint64("log.txt");
+
+    printf("%lu\n", l);
 
     return EXIT_SUCCESS;
 }

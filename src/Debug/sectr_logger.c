@@ -41,7 +41,7 @@ static char *get_time(void) {
     return time_str;
 }
 
-void log(enum LOG_TYPE log_type, const char *msg) {
+void sectr_log(enum LOG_TYPE log_type, const char *msg) {
     char *time_str = get_time();
     const char *log_type_str = log_message(log_type);
 
