@@ -5,3 +5,4 @@ t29-10-2026 19:07:07 [ERROR] Value out of range (src/main.cpp:53, main) - No mat
 29-10-2026 19:17:18 [ERROR] Value out of range (src/main.cpp:53, main) - No matching arg flag for 'vl' found
 29-10-2026 19:17:23 [ERROR] Value out of range (src/main.cpp:53, main) - No matching arg flag for 'vl' found
 31-10-2026 08:26:38 [ERROR] Invalid input (src/main.c:116, main) - Unknown option: '-l'
+04-11-2026 19:39:14 [ERROR] Invalid input (src/main.c:126, main) - Unknown option: '-1'

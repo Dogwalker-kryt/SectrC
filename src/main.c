@@ -2,6 +2,7 @@
 #include "Debug/sectr_err.h"
 #include "arg_parser/arg_pars.h"
 #include "read_sys_fs/read_sys_fs.h"
+#include "list_drives/list_drives.h"
 #include <errno.h>
 
 #define SECTRC_VERSION "development"
@@ -85,13 +86,23 @@ static bool abstract_clear_logs(const char *value, void *context) {
     return true;
 }
 
+static bool list_drives(const char *value, void *context) {
+    char buffer[256];
+
+    get_mount_point("/dev/sda2", buffer);
+
+    printf("%s\n", buffer);
+
+    return true;
+}
 
 static const args_t arg_arr[] = {
-    {"--help", "-h", "Show this help message", NULL, ARG_REQ_NO_VALUE, handle_help, &help_context, true},
-    {"--version", "-v", "Show the current version", NULL, ARG_REQ_NO_VALUE, print_version, NULL, true},
-    {"--no-color", "-nc", "Disable colored output", NULL, ARG_REQ_NO_VALUE, set_no_color_true, NULL, false},
-    {"--view-logs", "-vl", "View log messages (default: all)", "lines", ARG_REQ_OPTIONAL_VALUE, abstract_view_logs, NULL, false},
-    {"--clear-logs", "-cl", "Clear the log file", NULL, ARG_REQ_NO_VALUE, abstract_clear_logs, NULL, false},
+    {"--help", "-h", "Show this help message", NULL, ARG_REQ_NO_VALUE, handle_help, &help_context, EXIT_AFTER},
+    {"--version", "-v", "Show the current version", NULL, ARG_REQ_NO_VALUE, print_version, NULL, EXIT_AFTER},
+    {"--no-color", "-nc", "Disable colored output", NULL, ARG_REQ_NO_VALUE, set_no_color_true, NULL, DONT_EXIT_AFTER},
+    {"--view-logs", "-vl", "View log messages (default: all)", "lines", ARG_REQ_OPTIONAL_VALUE, abstract_view_logs, NULL, DONT_EXIT_AFTER},
+    {"--clear-logs", "-cl", "Clear the log file", NULL, ARG_REQ_NO_VALUE, abstract_clear_logs, NULL, DONT_EXIT_AFTER},
+    {"--list", "-l", "Lists all drives", NULL, ARG_REQ_OPTIONAL_VALUE, list_drives, NULL, EXIT_AFTER},
 };
 
 

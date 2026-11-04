@@ -9,6 +9,8 @@ typedef enum {
     ARG_REQ_OPTIONAL_VALUE = 2,
 } arg_reqs_t;
 
+#define EXIT_AFTER true
+#define DONT_EXIT_AFTER false
 
 typedef struct args_t {
     const char *long_arg;
