@@ -9,7 +9,7 @@
 
 typedef struct help_context_t {
     const args_t *options;
-    size_t option_count;
+    __uint64_t option_count;
     const char *program_name;
 } help_context_t;
 
@@ -20,17 +20,15 @@ static bool handle_help(const char *value, void *context) {
     const help_context_t *help = (const help_context_t *)context;
 
     printf("%sUsage:%s %s [options]\n\n%sOptions%s:\n", BOLD, RST, help->program_name, BOLD, RST);
-    for (size_t i = 0; i < help->option_count; ++i) {
+    for (__uint64_t i = 0; i < help->option_count; ++i) {
 
         const args_t *arg = &help->options[i];
         printf("  %-18s %-6s", arg->long_arg, arg->short_arg);
 
         if (arg->value_mode == ARG_REQ_REQUIRED_VALUE) {
-
             printf(" <%s>", arg->value_name ? arg->value_name : "value");
 
         } else if (arg->value_mode == ARG_REQ_OPTIONAL_VALUE) {
-
             printf(" [%s]", arg->value_name ? arg->value_name : "value");
         }
 

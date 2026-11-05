@@ -30,7 +30,7 @@ void view_logs(__uint64_t lines_to_count) {
     }
 
     char *line = NULL;
-    size_t capacity = 0;
+    __uint64_t capacity = 0;
     __uint64_t total_lines = 0;
     
     while (getline(&line, &capacity, globals.log_path.fd) != -1) {
