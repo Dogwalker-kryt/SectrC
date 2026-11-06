@@ -85,11 +85,17 @@ static bool abstract_clear_logs(const char *value, void *context) {
 }
 
 static bool list_drives(const char *value, void *context) {
+    (void)value;
+    (void)context;
     char buffer[256];
+    char buffer2[256];
 
-    get_mount_point("/dev/sda2", buffer);
+    if (get_mount_point("/dev/nvme0n1p2", buffer) && get_FS("/dev/nvme0n1p2", buffer2)) {
+        printf("hello\n");
+    }
 
     printf("%s\n", buffer);
+    printf("%s\n", buffer2);
 
     return true;
 }

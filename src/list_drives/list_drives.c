@@ -9,13 +9,13 @@ static bool open_mtab(FILE **out) {
     return *out != NULL;
 }
 
-void get_mount_point(const char *disk_name, char *buffer) {
+static bool get_x(const char *disk_name, char *buffer, enum GET_X_INFO code) {
     FILE *mtab = NULL;
     bool success_open = open_mtab(&mtab);
 
-    if (!success_open) {
+    if (unlikely(!success_open)) {
         ERR(ERRC_FileNotFound, "Failed to open /etc/mtab", "");
-        return;
+        return false;
     }
 
     char *line = NULL;
@@ -30,18 +30,37 @@ void get_mount_point(const char *disk_name, char *buffer) {
         char *mount = strtok_r(NULL, " ", &saveptr);
         char *fstype = strtok_r(NULL, " ", &saveptr);
 
-        if (dev != NULL && mount != NULL && fstype != NULL) {
-            if (strstr(dev, disk_name) != NULL) {
+        if (unlikely(dev == NULL || mount == NULL || fstype == NULL)) continue;
+        
+        if (unlikely(strstr(dev, disk_name) == NULL)) continue;
+    
+        switch (code) {
+            case FS_TYPE:
+                strcpy(buffer, fstype);
+                goto cleanup;
+
+            case MOUNT_POINT:
                 strcpy(buffer, mount);
-
-                // Remove trailing newline
-                buffer[strcspn(buffer, "\n")] = '\0';
-
-                break;
-            }
+                goto cleanup;
+        default:
+            ERR(ERRC_Unknown, "Unknown code in get_x", "");
+            break;
         }
+
+        cleanup:
+        buffer[strcspn(buffer, "\n")] = '\0';
+        break;
     }
 
     free(line);
     fclose(mtab);
+    return true;
+}
+
+bool get_mount_point(const char *disk_name, char *buffer) {
+    return get_x(disk_name, buffer, MOUNT_POINT) != false;
+}
+
+bool get_FS(const char *disk_name, char *buffer) {
+    return get_x(disk_name, buffer, FS_TYPE) != false;
 }
