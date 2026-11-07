@@ -2,7 +2,7 @@
 #include "Debug/sectr_err.h"
 #include "arg_parser/arg_pars.h"
 #include "read_sys_fs/read_sys_fs.h"
-#include "list_drives/list_drives.h"
+#include "disk_data/disk_data.h"
 #include <errno.h>
 
 #define SECTRC_VERSION "development"
@@ -85,18 +85,41 @@ static bool abstract_clear_logs(const char *value, void *context) {
 }
 
 static bool list_drives(const char *value, void *context) {
-    (void)value;
     (void)context;
-    char buffer[256];
-    char buffer2[256];
+    // if (!value) {
+    //     ERR(ERRC_InvalidInput, NULL, "Usage: --list <device-path>");
+    //     return false;
+    // }
 
-    if (get_mount_point("/dev/nvme0n1p2", buffer) && get_FS("/dev/nvme0n1p2", buffer2)) {
-        printf("hello\n");
+    // char mountpoint[256];
+    // char filesystem[256];
+    // if (!get_mount_point(value, mountpoint, sizeof(mountpoint))) return false;
+    // if (!get_FS(value, filesystem, sizeof(filesystem))) return false;
+
+    // printf("Device: %s\nMount point: %s\nFilesystem: %s\n", value, mountpoint, filesystem);
+    
+    Vec vec;
+    if (!vec_init(&vec, 1, sizeof(drive_mt))) {
+        ERR(ERRC_AllocationFault, NULL, "Failed to initialize drive vector");
+        return false;
     }
 
-    printf("%s\n", buffer);
-    printf("%s\n", buffer2);
+    if (!get_physical_disk_info(value ? value : "/dev/sdb", &vec)) {
+        vec_free(&vec);
+        return false;
+    }
 
+    drive_mt *first_drive = (drive_mt *)vec_get(&vec, 0);
+    if (!first_drive) {
+        ERR(ERRC_DeviceNotFound, NULL, "No physical drives found");
+        vec_free(&vec);
+        return false;
+    }
+
+        printf("Name: %s\nType: %s\nStatus: %s\nSize: %lu\n", first_drive->name,
+            first_drive->type, first_drive->status, (unsigned long)first_drive->size);
+
+    vec_free(&vec);
     return true;
 }
 
@@ -106,7 +129,7 @@ static const args_t arg_arr[] = {
     {"--no-color", "-nc", "Disable colored output", NULL, ARG_REQ_NO_VALUE, set_no_color_true, NULL, DONT_EXIT_AFTER},
     {"--view-logs", "-vl", "View log messages (default: all)", "lines", ARG_REQ_OPTIONAL_VALUE, abstract_view_logs, NULL, DONT_EXIT_AFTER},
     {"--clear-logs", "-cl", "Clear the log file", NULL, ARG_REQ_NO_VALUE, abstract_clear_logs, NULL, DONT_EXIT_AFTER},
-    {"--list", "-l", "Lists all drives", NULL, ARG_REQ_OPTIONAL_VALUE, list_drives, NULL, EXIT_AFTER},
+    {"--list", "-l", "Show mount details for a device", "device-path", ARG_REQ_OPTIONAL_VALUE, list_drives, NULL, EXIT_AFTER},
 };
 
 

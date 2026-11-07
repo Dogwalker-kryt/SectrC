@@ -13,7 +13,6 @@
 typedef __UINTPTR_TYPE__ __uintptr_t;
 typedef __UINT_FAST64_TYPE__ __uint_fast64;
 
-
 #define DEV_SUFFIX "_dev"
 #define NEW_TERMINAL_SCREEN "\033[?1049h"
 #define LEAVE_TERMINAL_SCREEN "\033[?1049l"
@@ -36,18 +35,6 @@ typedef __UINT_FAST64_TYPE__ __uint_fast64;
 
 #define SIZEOF_ARRAY(__arr) sizeof(__arr) / sizeof(__arr[0])
 
-typedef struct drive_metadata_t {
-    char *name;
-    char *model;
-    char *type;
-    char *mountpoint;
-    char *vendor;
-    char *fstype;
-    
-    __uint64_t size;
-    __uint16_t serial;
-    __uint16_t uuid;
-
-} drive_metadata_t;
-
 typedef bool (*arg_fn)(const char *value, void *context);
+
+#define CLEAR_BUFFER(_buffer) memset(_buffer, '\0', sizeof(_buffer))

@@ -17,3 +17,6 @@ t29-10-2026 19:07:07 [ERROR] Value out of range (src/main.cpp:53, main) - No mat
 06-11-2026 18:15:51 [ERROR] No mount-table entry for device (src/main.c:128, main) - /dev/sda2
 06-11-2026 18:16:19 [ERROR] No mount-table entry for device (src/main.c:128, main) - /dev/sda2
 06-11-2026 18:16:38 [ERROR] No mount-table entry for device (src/main.c:128, main) - /dev/nvme0n1
+07-11-2026 14:02:07 [ERROR] Invalid input (src/main.c:132, main) - Missing value for option: '-l'
+07-11-2026 14:02:12 [ERROR] No mount entry found for device (src/main.c:132, main) - /dev/sda
+07-11-2026 14:02:17 [ERROR] No mount entry found for device (src/main.c:132, main) - /dev/sda/
