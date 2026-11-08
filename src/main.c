@@ -87,18 +87,7 @@ static bool abstract_clear_logs(const char *value, void *context) {
 
 static bool list_drives(const char *value, void *context) {
     (void)context;
-    // if (!value) {
-    //     ERR(ERRC_InvalidInput, NULL, "Usage: --list <device-path>");
-    //     return false;
-    // }
 
-    // char mountpoint[256];
-    // char filesystem[256];
-    // if (!get_mount_point(value, mountpoint, sizeof(mountpoint))) return false;
-    // if (!get_FS(value, filesystem, sizeof(filesystem))) return false;
-
-    // printf("Device: %s\nMount point: %s\nFilesystem: %s\n", value, mountpoint, filesystem);
-    
     Vec vec;
     if (!vec_init(&vec, 1, sizeof(drive_mt))) {
         ERR(ERRC_AllocationFault, NULL, "Failed to initialize drive vector");
@@ -110,28 +99,6 @@ static bool list_drives(const char *value, void *context) {
         return false;
     }
 
-    // drive_mt *first_drive = (drive_mt *)vec_get(&vec, 0);
-    // if (!first_drive) {
-    //     ERR(ERRC_DeviceNotFound, NULL, "No physical drives found");
-    //     vec_free(&vec);
-    //     return false;
-    // }
-
-    //     printf("Name: %s\nType: %s\nStatus: %s\nSize: %lu\n", first_drive->name,
-    //         first_drive->type, first_drive->status, (unsigned long)first_drive->size);
-
-    // while (vec.element_count > 0) {
-    //     drive_mt *drive = (drive_mt *)vec_get(&vec, vec.element_count - 1);
-    //     if (!drive) break;
-
-    //     char *gib_size = convert_to_GiB(drive->size);
-
-    //     // printf("Name: %s\nType: %s\nStatus: %s\nSize: %s\n", drive->name,
-    //     //         drive->type, drive->status, gib_size);
-    //     print_disk_infos((const drive_mt*)vec.data, vec.element_count);
-
-    //     vec.element_count--;
-    // }
     print_disk_infos((const drive_mt*)vec.data, vec.element_count);
 
     vec_free(&vec);
