@@ -76,9 +76,9 @@ bool get_FS(const char *disk_name, char *buffer, __uint64_t buffer_size) {
     return get_x(disk_name, buffer, buffer_size, FS_TYPE);
 }
 
-Vec *get_physical_disk_info(const char *disk_name, Vec *vec) {
-    if (!disk_name || !vec || vec->element_size != sizeof(drive_mt)) {
-        ERR(ERRC_InvalidInput, "Invalid physical-disk lookup arguments", "disk_name and an initialized drive vector are required");
+Vec *get_physical_disk_info(Vec *vec) {
+    if (!vec || vec->element_size != sizeof(drive_mt)) {
+        ERR(ERRC_InvalidInput, "Invalid physical-disk lookup arguments", "An initialized drive vector is required");
         return NULL;
     }
 
@@ -99,7 +99,6 @@ Vec *get_physical_disk_info(const char *disk_name, Vec *vec) {
 
         char device_path[PATH_MAX];
         snprintf(device_path, sizeof(device_path), "/dev/%s", dev);
-        if (strcmp(disk_name, device_path) != 0) continue;
 
         drive_mt disk = {0};
         snprintf(disk.name, sizeof(disk.name), "/dev/%.58s", dev);

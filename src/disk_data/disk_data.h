@@ -29,4 +29,4 @@ bool get_mount_point(const char *disk_name, char *buffer, __uint64_t buffer_size
 
 bool get_FS(const char *disk_name, char *buffer, __uint64_t buffer_size);
 
-Vec *get_physical_disk_info(const char *disk_name, Vec *vec);
+Vec *get_physical_disk_info(Vec *vec);
