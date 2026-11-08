@@ -62,3 +62,11 @@ void view_logs(__uint64_t lines_to_count) {
         ERR(ERRC_IOError, "Cannot read logs", "failed while displaying log lines");
     }
 }
+
+char *convert_to_GiB(__uint64_t bytes) {
+    char buffer[32];
+    double gibibytes = (double)bytes / (1024.0 * 1024.0 * 1024.0);
+    snprintf(buffer, sizeof(buffer), "%.2f GiB", gibibytes);
+    return strdup(buffer);
+}
+

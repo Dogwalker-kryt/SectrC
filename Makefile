@@ -12,11 +12,11 @@ TARGET := ox
 
 # Flags
 CXXFLAGS := -D_POSIX_C_SOURCE=200112L
-LDFLAGS := -flto -s -O3 -lcrypto
+LDFLAGS := -flto -s -O3 -lcrypto -ludev -lblkid
 
 # Debug flags
 DEBUG_CXXFLAGS := -D_POSIX_C_SOURCE=200112L -g -O0 -fno-omit-frame-pointer
-DEBUG_LDFLAGS := -lcrypto
+DEBUG_LDFLAGS := -lcrypto -ludev -lblkid
 
 # Source and object files
 SRCS := $(shell find $(SRC_DIR) -type f -name '*.c') $(shell find $(SRC_DIR) -type f -name '*.cpp')

@@ -3,6 +3,7 @@
 #include "arg_parser/arg_pars.h"
 #include "read_sys_fs/read_sys_fs.h"
 #include "disk_data/disk_data.h"
+#include "list_drives/list_drives.h"
 #include <errno.h>
 
 #define SECTRC_VERSION "development"
@@ -104,20 +105,34 @@ static bool list_drives(const char *value, void *context) {
         return false;
     }
 
-    if (!get_physical_disk_info(value ? value : "/dev/sdb", &vec)) {
+    if (!get_physical_disk_info(&vec)) {
         vec_free(&vec);
         return false;
     }
 
-    drive_mt *first_drive = (drive_mt *)vec_get(&vec, 0);
-    if (!first_drive) {
-        ERR(ERRC_DeviceNotFound, NULL, "No physical drives found");
-        vec_free(&vec);
-        return false;
-    }
+    // drive_mt *first_drive = (drive_mt *)vec_get(&vec, 0);
+    // if (!first_drive) {
+    //     ERR(ERRC_DeviceNotFound, NULL, "No physical drives found");
+    //     vec_free(&vec);
+    //     return false;
+    // }
 
-        printf("Name: %s\nType: %s\nStatus: %s\nSize: %lu\n", first_drive->name,
-            first_drive->type, first_drive->status, (unsigned long)first_drive->size);
+    //     printf("Name: %s\nType: %s\nStatus: %s\nSize: %lu\n", first_drive->name,
+    //         first_drive->type, first_drive->status, (unsigned long)first_drive->size);
+
+    // while (vec.element_count > 0) {
+    //     drive_mt *drive = (drive_mt *)vec_get(&vec, vec.element_count - 1);
+    //     if (!drive) break;
+
+    //     char *gib_size = convert_to_GiB(drive->size);
+
+    //     // printf("Name: %s\nType: %s\nStatus: %s\nSize: %s\n", drive->name,
+    //     //         drive->type, drive->status, gib_size);
+    //     print_disk_infos((const drive_mt*)vec.data, vec.element_count);
+
+    //     vec.element_count--;
+    // }
+    print_disk_infos((const drive_mt*)vec.data, vec.element_count);
 
     vec_free(&vec);
     return true;

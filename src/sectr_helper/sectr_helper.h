@@ -11,3 +11,5 @@ __always_inline void cpy_root_to_buff(char *buff, const char *dmgr_root) {
 
 void clear_logs(void);
 void view_logs(__uint64_t lines_to_count);
+
+char *convert_to_GiB(__uint64_t bytes);
