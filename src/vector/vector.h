@@ -14,12 +14,6 @@ typedef struct Vec {
     __uint64_t buffer_size;
 } Vec;
 
-/**
- * @brief Initializes a vector with the specified expected element count and element size.
- * @param vec The vector to initialize.
- * @param expected_element_count The expected number of elements the vector will hold.
- * @param size The size of each element in the vector.
- */
 bool vec_init(Vec *vec, __uint32_t expected_element_count, __uint64_t size);
 
 /**

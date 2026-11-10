@@ -2,4 +2,4 @@
 
 #include "../disk_data/disk_data.h"
 
-void print_disk_infos(const drive_mt *disks, __uint64_t count);
+bool print_disk_infos(const drive_mt *disks, __uint64_t count, const char *disk_name);

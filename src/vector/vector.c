@@ -1,7 +1,7 @@
 #include "vector.h"
 
 bool vec_init(Vec *vec, __uint32_t expected_element_count, __uint64_t size) {
-    if (!vec || size == 0) return false;
+    if (unlikely(size == 0 || expected_element_count == 0 || !vec)) return false;
 
     vec->data = NULL;
     vec->expected_element_count = expected_element_count;
@@ -9,13 +9,12 @@ bool vec_init(Vec *vec, __uint32_t expected_element_count, __uint64_t size) {
     vec->element_size = size;
     vec->buffer_size = 0;
 
-    if (expected_element_count == 0) return true;
     if ((__uint64_t)expected_element_count > ((__uint64_t)-1) / size) return false;
 
     vec->buffer_size = (__uint64_t)expected_element_count * size;
     vec->data = malloc(vec->buffer_size);
 
-    if (!vec->data) {
+    if (unlikely(!vec->data)) {
         vec->buffer_size = 0;
         vec->expected_element_count = 0;
         vec->element_size = 0;

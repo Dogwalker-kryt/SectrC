@@ -20,3 +20,4 @@ t29-10-2026 19:07:07 [ERROR] Value out of range (src/main.cpp:53, main) - No mat
 07-11-2026 14:02:07 [ERROR] Invalid input (src/main.c:132, main) - Missing value for option: '-l'
 07-11-2026 14:02:12 [ERROR] No mount entry found for device (src/main.c:132, main) - /dev/sda
 07-11-2026 14:02:17 [ERROR] No mount entry found for device (src/main.c:132, main) - /dev/sda/
+10-11-2026 17:50:00 [ERROR] Device not found (src/main.c:159, main) - No disk or partition matched 'nvme0n2'

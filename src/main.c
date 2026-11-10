@@ -85,6 +85,22 @@ static bool abstract_clear_logs(const char *value, void *context) {
     return true;
 }
 
+static Vec *create_drives_vec() {
+    Vec *vec = (Vec*)malloc(sizeof(Vec*));
+
+    if (!vec_init(vec, DEFAULT_EXPECTED_ELEMENTS_COUNT, sizeof(drive_mt))) {
+        ERR(ERRC_AllocationFault, "Failed to initalize vec", "");
+        return NULL;
+    }
+
+    return vec;
+}
+
+static void free_drives_vec(Vec *vec) {
+    vec_free(vec);
+    free(vec);
+}
+
 static bool list_drives(const char *value, void *context) {
     (void)context;
 
@@ -99,9 +115,13 @@ static bool list_drives(const char *value, void *context) {
         return false;
     }
 
-    print_disk_infos((const drive_mt*)vec.data, vec.element_count);
+    bool found = print_disk_infos((const drive_mt*)vec.data, vec.element_count, value);
 
     vec_free(&vec);
+    if (!found && value) {
+        ERR(ERRC_DeviceNotFound, NULL, "No disk or partition matched '%s'", value);
+        return false;
+    }
     return true;
 }
 
@@ -111,13 +131,15 @@ static const args_t arg_arr[] = {
     {"--no-color", "-nc", "Disable colored output", NULL, ARG_REQ_NO_VALUE, set_no_color_true, NULL, DONT_EXIT_AFTER},
     {"--view-logs", "-vl", "View log messages (default: all)", "lines", ARG_REQ_OPTIONAL_VALUE, abstract_view_logs, NULL, DONT_EXIT_AFTER},
     {"--clear-logs", "-cl", "Clear the log file", NULL, ARG_REQ_NO_VALUE, abstract_clear_logs, NULL, DONT_EXIT_AFTER},
-    {"--list", "-l", "Show mount details for a device", "device-path", ARG_REQ_OPTIONAL_VALUE, list_drives, NULL, EXIT_AFTER},
+    {"--list", "-l", "List disks, optionally filtered by disk or partition name", "disk-name", ARG_REQ_OPTIONAL_VALUE, list_drives, NULL, EXIT_AFTER},
 };
 
 
 int main(int argc, char **argv) {
     atexit(close_log_file);
     set_globals();
+
+    Vec *drives_data_v = NULL;
 
     help_context.options = arg_arr;
     help_context.option_count = SIZEOF_ARRAY(arg_arr);
