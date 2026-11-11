@@ -8,10 +8,9 @@ static const char *device_basename(const char *device_name) {
 
 bool print_disk_infos(const drive_mt *disks, __uint64_t count, const char *disk_name) {
     __uint64_t printed_count = 0;
+    
     for (__uint64_t i = 0; i < count; i++) {
-        bool matches = !disk_name || disk_name[0] == '\0' ||
-            strcmp(device_basename(disk_name), device_basename(disks[i].name)) == 0 ||
-            (disks[i].parent[0] != '\0' && strcmp(device_basename(disk_name), device_basename(disks[i].parent)) == 0);
+        bool matches = !disk_name || disk_name[0] == '\0' || strcmp(device_basename(disk_name), device_basename(disks[i].name)) == 0 || (disks[i].parent[0] != '\0' && strcmp(device_basename(disk_name), device_basename(disks[i].parent)) == 0);
         if (!matches) continue;
 
         printf("Device: %s (%s), %llu bytes\n", disks[i].name, disks[i].type, (unsigned long long)disks[i].size);
