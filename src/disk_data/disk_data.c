@@ -1,4 +1,3 @@
-#define _DEFAULT_SOURCE
 #include "disk_data.h"
 #include "../Debug/sectr_err.h"
 #include <blkid/blkid.h>

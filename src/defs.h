@@ -8,6 +8,7 @@
 #include <limits.h>
 #include <stdarg.h>
 #include <sys/types.h>
+#include <termios.h>
 #include "color.h"
 
 typedef __UINTPTR_TYPE__ __uintptr_t;

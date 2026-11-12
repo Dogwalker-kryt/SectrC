@@ -4,6 +4,7 @@
 #include "read_sys_fs/read_sys_fs.h"
 #include "disk_data/disk_data.h"
 #include "list_drives/list_drives.h"
+#include "spinner/spinner.h"
 #include <errno.h>
 
 #define SECTRC_VERSION "development"
@@ -104,24 +105,28 @@ static void free_drives_vec(Vec *vec) {
 static bool list_drives(const char *value, void *context) {
     (void)context;
 
-    Vec vec;
-    if (!vec_init(&vec, 1, sizeof(drive_mt))) {
-        ERR(ERRC_AllocationFault, NULL, "Failed to initialize drive vector");
-        return false;
-    }
+    // Vec vec;
+    // if (!vec_init(&vec, 1, sizeof(drive_mt))) {
+    //     ERR(ERRC_AllocationFault, NULL, "Failed to initialize drive vector");
+    //     return false;
+    // }
 
-    if (!get_physical_disk_info(&vec)) {
-        vec_free(&vec);
-        return false;
-    }
+    // if (!get_physical_disk_info(&vec)) {
+    //     vec_free(&vec);
+    //     return false;
+    // }
 
-    bool found = print_disk_infos((const drive_mt*)vec.data, vec.element_count, value);
+    // bool found = print_disk_infos((const drive_mt*)vec.data, vec.element_count, value);
 
-    vec_free(&vec);
-    if (!found && value) {
-        ERR(ERRC_DeviceNotFound, NULL, "No disk or partition matched '%s'", value);
-        return false;
-    }
+    // vec_free(&vec);
+    // if (!found && value) {
+    //     ERR(ERRC_DeviceNotFound, NULL, "No disk or partition matched '%s'", value);
+    //     return false;
+    // }
+    spinner_start_pt();
+    sleep(50);
+    spinner_kill_pt();
+
     return true;
 }
 

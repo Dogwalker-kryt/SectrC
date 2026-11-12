@@ -36,7 +36,7 @@ static bool is_known_option(const char *token, const args_t *const arg_arr, __ui
     return find_arg(token, name_length, arg_arr, arg_count) != NULL;
 }
 
-bool parse_args(int argc, const char *const argv[], const args_t *arg_arr, __uint64_t arg_count) {
+bool parse_args(int argc, char *const argv[], const args_t *arg_arr, __uint64_t arg_count) {
 
     for (int i = 1; i < argc; ++i) {
 

@@ -1,4 +1,5 @@
 # Compiler
+CC := gcc
 CXX := g++
 
 # Directories
@@ -11,12 +12,14 @@ DEBUG_BUILD_DIR := build_debug
 TARGET := ox
 
 # Flags
+CFLAGS := -D_DEFAULT_SOURCE -D_POSIX_C_SOURCE=200112L -pthread
 CXXFLAGS := -D_POSIX_C_SOURCE=200112L
-LDFLAGS := -flto -s -O3 -lcrypto -ludev -lblkid
+LDFLAGS := -flto -s -O3 -lcrypto -ludev -lblkid -pthread -latomic
 
 # Debug flags
+DEBUG_CFLAGS := -D_DEFAULT_SOURCE -D_POSIX_C_SOURCE=200112L -g -O0 -fno-omit-frame-pointer -pthread
 DEBUG_CXXFLAGS := -D_POSIX_C_SOURCE=200112L -g -O0 -fno-omit-frame-pointer
-DEBUG_LDFLAGS := -lcrypto -ludev -lblkid
+DEBUG_LDFLAGS := -lcrypto -ludev -lblkid -pthread
 
 # Source and object files
 SRCS := $(shell find $(SRC_DIR) -type f -name '*.c') $(shell find $(SRC_DIR) -type f -name '*.cpp')
@@ -34,7 +37,7 @@ $(TARGET): $(OBJS)
 # Compile each source file into a matching object path
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(@D)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(@D)
@@ -43,7 +46,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
 # Debug build
 $(DEBUG_BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(@D)
-	$(CXX) $(DEBUG_CXXFLAGS) -c $< -o $@
+	$(CC) $(DEBUG_CFLAGS) -c $< -o $@
 
 $(DEBUG_BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(@D)
