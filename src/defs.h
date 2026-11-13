@@ -5,14 +5,12 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <limits.h>
 #include <stdarg.h>
 #include <sys/types.h>
 #include <termios.h>
 #include "color.h"
-
-typedef __UINTPTR_TYPE__ __uintptr_t;
-typedef __UINT_FAST64_TYPE__ __uint_fast64;
 
 #define DEV_SUFFIX "_dev"
 #define NEW_TERMINAL_SCREEN "\033[?1049h"
@@ -26,7 +24,9 @@ typedef __UINT_FAST64_TYPE__ __uint_fast64;
 
 #define KiB 1024
 
+#ifndef PATH_MAX
 #define PATH_MAX 4096
+#endif
 
 #define LOG_PATH_SLICE "/data/log.dat"
 #define CONFIG_PATH_SLICE "/data/config.conf"
@@ -34,7 +34,7 @@ typedef __UINT_FAST64_TYPE__ __uint_fast64;
 #define unlikely(expr) __builtin_expect(!!(expr), 0)
 #define likely(expr)   __builtin_expect(!!(expr), 1)
 
-#define SIZEOF_ARRAY(__arr) sizeof(__arr) / sizeof(__arr[0])
+#define SIZEOF_ARRAY(arr) (sizeof(arr) / sizeof((arr)[0]))
 
 typedef bool (*arg_fn)(const char *value, void *context);
 

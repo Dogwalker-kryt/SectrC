@@ -1,10 +1,10 @@
 #include "arg_pars.h"
 
-static const args_t *find_arg(const char *token, __uint64_t name_length, const args_t *arg_arr, __uint64_t arg_count) {
-    for (__uint64_t i = 0; i < arg_count; ++i) {
+static const args_t *find_arg(const char *token, size_t name_length, const args_t *arg_arr, size_t arg_count) {
+    for (size_t i = 0; i < arg_count; ++i) {
         const char *names[] = {arg_arr[i].long_arg, arg_arr[i].short_arg};
 
-        for (__uint64_t name_index = 0; name_index < SIZEOF_ARRAY(names); ++name_index) {
+        for (size_t name_index = 0; name_index < SIZEOF_ARRAY(names); ++name_index) {
 
             const char *name = names[name_index];
             if (name && strlen(name) == name_length && strncmp(token, name, name_length) == 0) {
@@ -25,18 +25,18 @@ static bool set_parse_error(const char *message, const char *token) {
     return false;
 }
 
-static bool is_known_option(const char *token, const args_t *const arg_arr, __uint64_t arg_count) {
+static bool is_known_option(const char *token, const args_t *const arg_arr, size_t arg_count) {
     if (!token) {
         return false;
     }
 
     const char *equals = strchr(token, '=');
-    __uint64_t name_length = equals ? (__uint64_t)(equals - token) : strlen(token);
+    size_t name_length = equals ? (size_t)(equals - token) : strlen(token);
 
     return find_arg(token, name_length, arg_arr, arg_count) != NULL;
 }
 
-bool parse_args(int argc, char *const argv[], const args_t *arg_arr, __uint64_t arg_count) {
+bool parse_args(int argc, char *const argv[], const args_t *arg_arr, size_t arg_count) {
 
     for (int i = 1; i < argc; ++i) {
 
@@ -46,7 +46,7 @@ bool parse_args(int argc, char *const argv[], const args_t *arg_arr, __uint64_t 
         }
 
         const char *equals = strchr(token, '='); 
-        __uint64_t name_length = equals ? (__uint64_t)(equals - token) : strlen(token);
+        size_t name_length = equals ? (size_t)(equals - token) : strlen(token);
         const args_t *arg = find_arg(token, name_length, arg_arr, arg_count);
         if (unlikely(!arg)) {
             return set_parse_error("Unknown option: '%s'", token);

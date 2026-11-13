@@ -12,7 +12,7 @@ char *build_path_beside_exe(const char *suffix) {
     if (!exe) return NULL;
 
     char *slash = strrchr(exe, '/');
-    __uint64_t dir_len = slash ? (__uint64_t)(slash - exe) : 0;
+    size_t dir_len = slash ? (size_t)(slash - exe) : 0;
 
     char *path_buffer = (char*)malloc(PATH_MAX);
     if (path_buffer == NULL) {
@@ -24,9 +24,9 @@ char *build_path_beside_exe(const char *suffix) {
     int n = snprintf(path_buffer, PATH_MAX, "%.*s%s", (int)dir_len, exe, suffix);
     free(exe);
 
-    if (n < 0 || (__uint64_t)n >= PATH_MAX) {
+    if (n < 0 || (size_t)n >= PATH_MAX) {
         free(path_buffer);
-        ERR(ERRC_OutOfRange, "built path is too long", suffix);
+        ERR(ERRC_OutOfRange, "built path is too long", "%s", suffix);
         return NULL;
     }
 
@@ -49,3 +49,6 @@ void set_standalone_true() {
     globals.stand_alone = true; 
 }
 
+const char *sectr_color(const char *code) {
+    return globals.no_color ? "" : code;
+}

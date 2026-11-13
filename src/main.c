@@ -8,11 +8,14 @@
 #include "fingerprint/fingerprint.h"
 #include <errno.h>
 
+/* Set by the Makefile from `git describe`; see README "Versioning". */
+#ifndef SECTRC_VERSION
 #define SECTRC_VERSION "development"
+#endif
 
 typedef struct help_context_t {
     const args_t *options;
-    __uint64_t option_count;
+    size_t option_count;
     const char *program_name;
 } help_context_t;
 
@@ -23,7 +26,7 @@ static bool handle_help(const char *value, void *context) {
     const help_context_t *help = (const help_context_t *)context;
 
     printf("%sUsage:%s %s [options]\n\n%sOptions%s:\n", BOLD, RST, help->program_name, BOLD, RST);
-    for (__uint64_t i = 0; i < help->option_count; ++i) {
+    for (size_t i = 0; i < help->option_count; ++i) {
 
         const args_t *arg = &help->options[i];
         printf("  %-18s %-6s", arg->long_arg, arg->short_arg);
@@ -56,7 +59,7 @@ static bool set_no_color_true(const char *value, void *context) {
 
 static bool abstract_view_logs(const char *value, void *context) {
     (void)context;
-    __uint64_t line_count = 0;
+    size_t line_count = 0;
 
     if (value) {
         for (const char *digit = value; *digit; ++digit) {
@@ -73,7 +76,7 @@ static bool abstract_view_logs(const char *value, void *context) {
             ERR(ERRC_InvalidInput, NULL, "Expected a non-negative line count, got '%s'", value);
             return false;
         }
-        line_count = (__uint64_t)parsed;
+        line_count = (size_t)parsed;
     }
 
     view_logs(line_count);
@@ -85,22 +88,6 @@ static bool abstract_clear_logs(const char *value, void *context) {
     (void)context;
     clear_logs();
     return true;
-}
-
-static Vec *create_drives_vec() {
-    Vec *vec = (Vec*)malloc(sizeof(Vec*));
-
-    if (!vec_init(vec, DEFAULT_EXPECTED_ELEMENTS_COUNT, sizeof(drive_mt))) {
-        ERR(ERRC_AllocationFault, "Failed to initalize vec", "");
-        return NULL;
-    }
-
-    return vec;
-}
-
-static void free_drives_vec(Vec *vec) {
-    vec_free(vec);
-    free(vec);
 }
 
 static bool list_drives(const char *value, void *context) {
@@ -156,6 +143,11 @@ int main(int argc, char **argv) {
     help_context.options = arg_arr;
     help_context.option_count = SIZEOF_ARRAY(arg_arr);
     help_context.program_name = argc > 0 ? argv[0] : "ox";
+
+    /* Options run in order and some exit early (e.g. -h), so check --no-color first. */
+    for (int i = 1; i < argc; ++i) {
+        if (strcmp(argv[i], "--no-color") == 0 || strcmp(argv[i], "-nc") == 0) globals.no_color = true;
+    }
 
     if (!open_log_file()) {
         PERR();

@@ -8,6 +8,7 @@ static pthread_t spinner_thread;
 static atomic_int spinner_running = 0;
 
 static void *spinner_run_animation(void* arg) {
+    (void)arg;
     int dots = 0;
 
     while (atomic_load(&spinner_running)) {

@@ -1,6 +1,11 @@
 #include "sectr_logger.h"
 
 bool open_log_file(void) {
+    if (globals.log_path.path == NULL) {
+        fprintf(stderr, "Failed to determine the log file path\n");
+        return false;
+    }
+
     FILE *log_file = fopen(globals.log_path.path, "a+");
 
     if (log_file == NULL) {
@@ -11,8 +16,11 @@ bool open_log_file(void) {
     globals.log_path.fd = log_file;
     return true;
 }
+
 void close_log_file(void) {
+    if (globals.log_path.fd == NULL) return;
     fclose(globals.log_path.fd);
+    globals.log_path.fd = NULL;
 }
 
 static const char *log_message(enum LOG_TYPE log_type) {
@@ -45,7 +53,7 @@ void sectr_log(enum LOG_TYPE log_type, const char *msg) {
     char *time_str = get_time();
     const char *log_type_str = log_message(log_type);
 
-    if (time_str == NULL || log_type_str == NULL) {
+    if (time_str == NULL || log_type_str == NULL || globals.log_path.fd == NULL) {
         return;
     }
 

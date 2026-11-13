@@ -1,9 +1,12 @@
 #include "sectr_err.h"
 
 err_val_t err_val = {
-    -1,
-    NULL,
-    "\0"
+    .errc = ERRC_ZERO,
+    .std_err_buff = NULL,
+    .err_buff = "",
+    .file = NULL,
+    .line = 0,
+    .func = NULL,
 };
 
 const char *errorMessage(int code) {
@@ -27,8 +30,11 @@ const char *errorMessage(int code) {
     }
 }
 
-void set_err_vals(enum ErrorCode code, const char *std_err_msg, const char *fmt, ...) {
+void set_err_vals(const char *file, int line, const char *func, enum ErrorCode code, const char *std_err_msg, const char *fmt, ...) {
     err_val.errc = code;
+    err_val.file = file;
+    err_val.line = line;
+    err_val.func = func;
     err_val.std_err_buff = std_err_msg ? std_err_msg : errorMessage(code);
 
     va_list args;
@@ -38,23 +44,24 @@ void set_err_vals(enum ErrorCode code, const char *std_err_msg, const char *fmt,
 }
 
 
-int printError_chk(const char *file, __int32_t line, const char *func) {
-    if (unlikely(err_val.errc == -1)) { return 1; }
+int printError_chk(void) {
+    if (unlikely(err_val.errc == ERRC_ZERO)) { return 1; }
 
     const char *std_err = err_val.std_err_buff ? err_val.std_err_buff : "";
-    const char *err     = err_val.err_buff ? err_val.err_buff : "";
-    const char *srcfile = file ? file : "";
-    const char *srcfunc = func ? func : "";
+    const char *err     = err_val.err_buff;
+    const char *srcfile = err_val.file ? err_val.file : "";
+    const char *srcfunc = err_val.func ? err_val.func : "";
+    int32_t line = err_val.line;
     const char *fmt = "%s (%s:%d, %s) - %s";
 
-    __int32_t len = snprintf(NULL, 0, fmt, std_err, srcfile, line, srcfunc, err);
+    int32_t len = snprintf(NULL, 0, fmt, std_err, srcfile, line, srcfunc, err);
 
     if (likely(len >= 0)) {
-        char *msg = (char*)malloc((__uint64_t)len + 1);
+        char *msg = (char*)malloc((size_t)len + 1);
 
         if (likely(msg != NULL)) {
 
-            snprintf(msg, (__uint64_t)len + 1, fmt, std_err, srcfile, line, srcfunc, err);
+            snprintf(msg, (size_t)len + 1, fmt, std_err, srcfile, line, srcfunc, err);
             fprintf(stderr, "%s[ERROR]%s %s\n", RED, RST, msg);
             LOG_ERR(msg);
 
@@ -68,7 +75,12 @@ int printError_chk(const char *file, __int32_t line, const char *func) {
         LOG_ERR(err);
     }
 
-    set_err_vals(ERRC_ZERO, NULL, "");
+    err_val.errc = ERRC_ZERO;
+    err_val.std_err_buff = NULL;
+    err_val.err_buff[0] = '\0';
+    err_val.file = NULL;
+    err_val.line = 0;
+    err_val.func = NULL;
     
     return 1;
 }

@@ -1,5 +1,23 @@
-/build
+# Build output
+/build/
+/build_debug/
 *.o
-LICENSE
-ox
-/.vscode
+*.d
+
+# Binaries
+/ox
+/ox_debug
+
+# Runtime files
+log.txt
+config.json
+
+# Release archives
+*.tar.gz
+
+# Editor / OS
+/.vscode/
+.idea/
+*.swp
+*~
+.DS_Store

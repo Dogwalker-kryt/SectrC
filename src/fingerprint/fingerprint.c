@@ -30,7 +30,7 @@ static bool create_fingerprint_of_disk(char *dest, size_t dest_size, const drive
     return true;
 }
 
-bool fingerprint_disk(const char *disk_name, char *hash_hex) {
+bool fingerprint_disk(const char *disk_name, char hash_hex[FINGERPRINT_SHA256_HEX_SIZE + 1]) {
     if (!disk_name || disk_name[0] == '\0' || !hash_hex) {
         ERR(ERRC_InvalidInput, "Invalid disk fingerprint arguments", "A disk name and hash output buffer are required");
         return false;
@@ -39,7 +39,7 @@ bool fingerprint_disk(const char *disk_name, char *hash_hex) {
     hash_hex[0] = '\0';
     Vec vec;
     if (!vec_init(&vec, 1, sizeof(drive_mt))) {
-        ERR(ERRC_AllocationFault, "Failed to init vec for fingerprinting", "");
+        ERR(ERRC_AllocationFault, NULL, "Failed to init vec for fingerprinting");
         return false;
     }
 
@@ -52,7 +52,7 @@ bool fingerprint_disk(const char *disk_name, char *hash_hex) {
     const char *requested_name = device_basename(disk_name);
     const drive_mt *metadata = NULL;
 
-    for (__uint32_t i = 0; i < disk_vec->element_count; ++i) {
+    for (uint32_t i = 0; i < disk_vec->element_count; ++i) {
         const drive_mt *candidate = (const drive_mt *)vec_get(disk_vec, i);
 
         if (candidate && strcmp(device_basename(candidate->name), requested_name) == 0) {

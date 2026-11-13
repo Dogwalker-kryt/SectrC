@@ -3,7 +3,7 @@
 #include <ctype.h>
 #include <inttypes.h>
 
-bool read_sysfs_text(const char *path, char *buffer, __uint_least64_t capacity) {
+bool read_sysfs_text(const char *path, char *buffer, size_t capacity) {
     if (unlikely(path == NULL) || unlikely(buffer == NULL) || unlikely(capacity == 0)) return false;
 
     buffer[0] = '\0';
@@ -11,8 +11,8 @@ bool read_sysfs_text(const char *path, char *buffer, __uint_least64_t capacity) 
     FILE *fp = fopen(path, "r");
     if (fp == NULL) return false;
 
-    __uint_least64_t length = 0;
-    __int32_t ch;
+    size_t length = 0;
+    int32_t ch;
     bool ok = true;
 
     while ((ch = fgetc(fp)) != EOF) {
@@ -39,7 +39,7 @@ bool read_sysfs_text(const char *path, char *buffer, __uint_least64_t capacity) 
 }
 
 
-bool read_sysfs_u64(const char *path, __uint64_t *out) {
+bool read_sysfs_u64(const char *path, uint64_t *out) {
     if (unlikely(out == NULL)) return false;
 
     char buffer[128];
@@ -52,24 +52,24 @@ bool read_sysfs_u64(const char *path, __uint64_t *out) {
 
     errno = 0;
     char *end;
-    __uintmax_t value = strtoumax(start, &end, 10);
+    uintmax_t value = strtoumax(start, &end, 10);
 
     while (isspace((unsigned char)*end)) ++end;
 
-    if (errno == ERANGE || end == start || *end != '\0' || value > __UINT64_MAX__) return false;
+    if (errno == ERANGE || end == start || *end != '\0' || value > UINT64_MAX) return false;
 
-    *out = (__uint64_t)value;
+    *out = (uint64_t)value;
     return true;
 }
 
 
-__uint64_t read_sysfs_uint64(const char *__restrict__ path) {
+uint64_t read_sysfs_uint64(const char *__restrict__ path) {
     FILE *sys_file = fopen(path, "r");
     if (!sys_file) {
         return 0;
     }
 
-    __uint64_t value = 0;
+    uint64_t value = 0;
 
     if (fscanf(sys_file, "%" SCNu64, &value) != 1) {
         fclose(sys_file);

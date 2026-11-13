@@ -5,7 +5,9 @@ These rules keep SectrC consistent, easy to review, and lightweight. Follow them
 ## Language and types
 
 - Prefer C and C-compatible interfaces. Use C++ only where the project currently requires it or where there is a clear reason.
-- Use the project's existing `__`-prefixed integer types (for example, `__uint64_t`) instead of `size_t` or introducing another integer-type convention.
+- Use the fixed-width integer types from `<stdint.h>` (for example, `uint64_t`, `uint32_t`, `int32_t`). Do not use `__`-prefixed types such as `__uint64_t`: names starting with `__` are reserved for the compiler and the C library.
+- Use `size_t` for sizes and counts of things in memory: buffer sizes, string lengths, array lengths and indexes, `sizeof` results. Use `ssize_t` where a library function returns it (for example, `readlink()`).
+- Use `uint64_t` for values that are not about memory and can exceed 4 GiB on a 32-bit system: disk sizes in bytes, numbers read from sysfs, line counts of files.
 - Use the narrowest project integer type that safely represents the value. Do not use a signed type for values that can be negative only if the operation actually requires signed values.
 
 ## Formatting

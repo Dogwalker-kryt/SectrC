@@ -6,7 +6,7 @@
 #include <limits.h>
 #include <mntent.h>
 
-const char *scsi_device_type_name(const char *disk_name, __uint8_t type) {
+const char *scsi_device_type_name(const char *disk_name, uint8_t type) {
     switch (type) {
         case 0x00: return "disk";
         case 0x01: return "tape";
@@ -21,12 +21,12 @@ const char *scsi_device_type_name(const char *disk_name, __uint8_t type) {
     }
 }
 
-static void copy_value(char *destination, __uint64_t destination_size, const char *value) {
+static void copy_value(char *destination, size_t destination_size, const char *value) {
     if (destination_size == 0) return;
     snprintf(destination, destination_size, "%s", value ? value : "");
 }
 
-static bool copy_blkid_value(blkid_probe probe, const char *tag, char *destination, __uint64_t destination_size) {
+static bool copy_blkid_value(blkid_probe probe, const char *tag, char *destination, size_t destination_size) {
     const char *value = NULL;
     size_t value_length = 0;
     if (blkid_probe_lookup_value(probe, tag, &value, &value_length) != 0 || !value || value_length == 0) return false;
@@ -45,7 +45,7 @@ static void populate_blkid_data(drive_mt *disk) {
     blkid_free_probe(probe);
 }
 
-static bool get_x(const char *disk_name, char *buffer, __uint64_t buffer_size, enum GET_X_INFO code) {
+static bool get_x(const char *disk_name, char *buffer, size_t buffer_size, enum GET_X_INFO code) {
     if (unlikely(!disk_name || !buffer || buffer_size == 0)) {
         ERR(ERRC_InvalidInput, "Invalid mount lookup arguments", "disk_name, buffer, and buffer_size are required");
         return false;
@@ -77,9 +77,9 @@ static bool get_x(const char *disk_name, char *buffer, __uint64_t buffer_size, e
                 return false;
         }
 
-        __uint64_t value_length = (__uint64_t)strlen(value);
+        size_t value_length = strlen(value);
         if (value_length >= buffer_size) {
-            ERR(ERRC_OutOfRange, "Mount information buffer is too small", "Required %lu bytes, have %lu", (unsigned long)(value_length + 1), (unsigned long)buffer_size);
+            ERR(ERRC_OutOfRange, "Mount information buffer is too small", "Required %zu bytes, have %zu", value_length + 1, buffer_size);
             endmntent(mtab);
             return false;
         }
@@ -93,11 +93,11 @@ static bool get_x(const char *disk_name, char *buffer, __uint64_t buffer_size, e
     return found;
 }
 
-bool get_mount_point(const char *disk_name, char *buffer, __uint64_t buffer_size) {
+bool get_mount_point(const char *disk_name, char *buffer, size_t buffer_size) {
     return get_x(disk_name, buffer, buffer_size, MOUNT_POINT);
 }
 
-bool get_FS(const char *disk_name, char *buffer, __uint64_t buffer_size) {
+bool get_FS(const char *disk_name, char *buffer, size_t buffer_size) {
     if (unlikely(!disk_name || !buffer || buffer_size == 0)) {
         ERR(ERRC_InvalidInput, "Invalid filesystem lookup arguments", "disk_name, buffer, and buffer_size are required");
         return false;
@@ -195,14 +195,14 @@ Vec *get_physical_disk_info(Vec *vec) {
             char *end = NULL;
             errno = 0;
             unsigned long long sectors = strtoull(sectors_value, &end, 10);
-            if (errno == 0 && end != sectors_value && *end == '\0' && sectors <= ULLONG_MAX / 512) disk.size = (__uint64_t)sectors * 512;
+            if (errno == 0 && end != sectors_value && *end == '\0' && sectors <= ULLONG_MAX / 512) disk.size = (uint64_t)sectors * 512;
         }
 
         const char *type_value = is_disk ? udev_device_get_sysattr_value(device, "device/type") : NULL;
         if (is_disk && type_value) {
             char *end = NULL;
             unsigned long scsi_type = strtoul(type_value, &end, 10);
-            if (end != type_value && *end == '\0' && scsi_type <= 0xff) copy_value(disk.type, sizeof(disk.type), scsi_device_type_name(sysname, (__uint8_t)scsi_type));
+            if (end != type_value && *end == '\0' && scsi_type <= 0xff) copy_value(disk.type, sizeof(disk.type), scsi_device_type_name(sysname, (uint8_t)scsi_type));
         }
         if (is_disk && disk.type[0] == '\0') copy_value(disk.type, sizeof(disk.type), scsi_device_type_name(sysname, 0xff));
 

@@ -5,16 +5,16 @@
 #define DEFAULT_EXPECTED_ELEMENTS_COUNT 7
 
 typedef struct Vec {
-    __uint32_t element_count;
-    __uint32_t expected_element_count;
+    uint32_t element_count;
+    uint32_t expected_element_count;
     
-    __uint64_t element_size;
+    size_t element_size;
 
     void *data;
-    __uint64_t buffer_size;
+    size_t buffer_size;
 } Vec;
 
-bool vec_init(Vec *vec, __uint32_t expected_element_count, __uint64_t size);
+bool vec_init(Vec *vec, uint32_t expected_element_count, size_t size);
 
 /**
  * @brief Adds an element to the vector.
@@ -28,6 +28,6 @@ bool vec_add_element(Vec *vec, const void *element);
 /**
  * @brief Gets an element by index, or NULL when the index is outside the vector.
  */
-void *vec_get(Vec *vec, __uint32_t index);
+void *vec_get(Vec *vec, uint32_t index);
 
 void vec_free(Vec *vec);

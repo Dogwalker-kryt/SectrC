@@ -19,20 +19,20 @@ typedef struct drive_mt {
     char bus[32];
     char parent[64];
     
-    __uint64_t size;
+    uint64_t size;
 
 } drive_mt;
 
-const char *scsi_device_type_name(const char *disk_name, __uint8_t type);
+const char *scsi_device_type_name(const char *disk_name, uint8_t type);
 
 enum GET_X_INFO {
     FS_TYPE,
     MOUNT_POINT
 };
 
-bool get_mount_point(const char *disk_name, char *buffer, __uint64_t buffer_size);
+bool get_mount_point(const char *disk_name, char *buffer, size_t buffer_size);
 
-bool get_FS(const char *disk_name, char *buffer, __uint64_t buffer_size);
+bool get_FS(const char *disk_name, char *buffer, size_t buffer_size);
 
 /* Adds physical disks and their partitions to an initialized drive_mt vector. */
 Vec *get_physical_disk_info(Vec *vec);

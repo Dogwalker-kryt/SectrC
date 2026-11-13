@@ -22,7 +22,7 @@ char *elf_run_path() {
         return NULL;
     }
 
-    __uint64_t len = readlink("/proc/self/exe", path, PATH_MAX - 1);
+    ssize_t len = readlink("/proc/self/exe", path, PATH_MAX - 1);
 
     if (len == -1) {
         ERR(ERRC_ProcessFailure, "Failed to read the path of the running executable", "readlink() failed");
@@ -45,8 +45,9 @@ void free_path(path_t *path_obj) {
     if (likely(path_obj->path)) {
         free(path_obj->path);
         path_obj->path = NULL;
-        fclose(path_obj->fd);
     }
+
+    if (path_obj->fd) fclose(path_obj->fd);
 
     path_obj->def = NULL;
     path_obj->fd = NULL;
