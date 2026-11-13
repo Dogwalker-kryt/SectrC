@@ -6,6 +6,7 @@
 #include "list_drives/list_drives.h"
 #include "spinner/spinner.h"
 #include "fingerprint/fingerprint.h"
+#include "ui/ui.h"
 #include <errno.h>
 
 /* Set by the Makefile from `git describe`; see README "Versioning". */
@@ -21,32 +22,49 @@ typedef struct help_context_t {
 
 static help_context_t help_context;
 
+static void print_example(const char *args, const char *description) {
+    printf("    %s%s%s %s", CYAN, ui_program_name, RST, args);
+    printf("%*s%s%s%s\n", (int)(22 - strlen(args)), "", GRAY, description, RST);
+}
+
 static bool handle_help(const char *value, void *context) {
     (void)value;
     const help_context_t *help = (const help_context_t *)context;
 
-    printf("%sUsage:%s %s [options]\n\n%sOptions%s:\n", BOLD, RST, help->program_name, BOLD, RST);
+    ui_banner();
+    printf("\n  %sLinux disk inspection tool%s  %s·  %s%s\n", BOLD, RST, GRAY, SECTRC_VERSION, RST);
+
+    ui_section("USAGE");
+    printf("    %s%s%s %s[options]%s\n", CYAN, help->program_name, RST, GRAY, RST);
+
+    ui_section("OPTIONS");
     for (size_t i = 0; i < help->option_count; ++i) {
-
         const args_t *arg = &help->options[i];
-        printf("  %-18s %-6s", arg->long_arg, arg->short_arg);
 
-        if (arg->value_mode == ARG_REQ_REQUIRED_VALUE) {
-            printf(" <%s>", arg->value_name ? arg->value_name : "value");
+        char short_name[16], value_name[32] = "";
+        snprintf(short_name, sizeof(short_name), "%s,", arg->short_arg);
+        if (arg->value_mode == ARG_REQ_REQUIRED_VALUE) snprintf(value_name, sizeof(value_name), "<%s>", arg->value_name ? arg->value_name : "value");
+        else if (arg->value_mode == ARG_REQ_OPTIONAL_VALUE) snprintf(value_name, sizeof(value_name), "[%s]", arg->value_name ? arg->value_name : "value");
 
-        } else if (arg->value_mode == ARG_REQ_OPTIONAL_VALUE) {
-            printf(" [%s]", arg->value_name ? arg->value_name : "value");
-        }
-
-        printf("\t%s\n", arg->description ? arg->description : "");
+        printf("    %s%s%-4s%s %s%s%-14s%s %s%-12s%s %s\n", BOLD, CYAN, short_name, RST, BOLD, CYAN, arg->long_arg, RST, GRAY, value_name, RST, arg->description ? arg->description : "");
     }
+
+    ui_section("EXAMPLES");
+    print_example("--list", "all disks and partitions");
+    print_example("-l nvme0n1", "details for one disk and its partitions");
+    print_example("-fp /dev/sda", "fingerprint a drive");
+    print_example("-vl 20", "last 20 log lines");
+
+    char log_path[PATH_MAX];
+    ui_tilde_path(globals.log_path.path ? globals.log_path.path : "-", log_path, sizeof(log_path));
+    printf("\n  %sLogs: %s%s\n\n", GRAY, log_path, RST);
     return true;
 }
 
 static bool print_version(const char *value, void *context) {
     (void)value;
     (void)context;
-    printf("SectrC %s\n", SECTRC_VERSION);
+    printf("%s%sSectrC%s %s\n", BOLD, CYAN, RST, SECTRC_VERSION);
     return true;
 }
 
@@ -79,15 +97,13 @@ static bool abstract_view_logs(const char *value, void *context) {
         line_count = (size_t)parsed;
     }
 
-    view_logs(line_count);
-    return true;
+    return view_logs(line_count);
 }
 
 static bool abstract_clear_logs(const char *value, void *context) {
     (void)value;
     (void)context;
-    clear_logs();
-    return true;
+    return clear_logs();
 }
 
 static bool list_drives(const char *value, void *context) {
@@ -121,7 +137,8 @@ static bool fingerprint(const char *value, void *context) {
     char hash[FINGERPRINT_SHA256_HEX_SIZE + 1];
     if (!fingerprint_disk(value, hash)) return false;
 
-    printf("%s%s%s: %s%s%s\n", BOLD, value, RST, BOLD, hash, RST);
+    printf("\n  %s%s◆%s %sFingerprint%s  %s%s%s\n", BOLD, MAGENTA, RST, BOLD, RST, GRAY, value, RST);
+    printf("    %sSHA-256%s  %s%s%s%s\n\n", GRAY, RST, BOLD, GREEN, hash, RST);
     return true;
 }
 
@@ -142,9 +159,15 @@ int main(int argc, char **argv) {
 
     help_context.options = arg_arr;
     help_context.option_count = SIZEOF_ARRAY(arg_arr);
-    help_context.program_name = argc > 0 ? argv[0] : "ox";
+    if (argc > 0 && argv[0][0]) {
+        const char *slash = strrchr(argv[0], '/');
+        ui_program_name = slash ? slash + 1 : argv[0];
+    }
+    help_context.program_name = ui_program_name;
 
-    /* Options run in order and some exit early (e.g. -h), so check --no-color first. */
+    /* No colors when piped into a file or another program, or when NO_COLOR is set (no-color.org). */
+    if (!isatty(STDOUT_FILENO) || getenv("NO_COLOR")) globals.no_color = true;
+
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "--no-color") == 0 || strcmp(argv[i], "-nc") == 0) globals.no_color = true;
     }

@@ -14,6 +14,7 @@ const char *sectr_color(const char *code);
 #define BOLD    sectr_color("\033[1m")
 #define RST     sectr_color("\033[0m")
 #define INVERSE sectr_color("\033[7m")
+#define GRAY    sectr_color("\033[90m")
 
 /* Cursor movement, not a color: always emitted. */
 #define BACK    "\033[D"

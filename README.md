@@ -25,6 +25,29 @@ It is a lightweight rewrite of [Sectr-ctl](https://github.com/Dogwalker-kryt/Sec
 
 ## Quick start
 
+### Install with the setup script (recommended)
+
+```sh
+git clone https://github.com/Dogwalker-kryt/SectrC.git
+cd SectrC
+./setup.sh
+```
+
+The script:
+
+1. detects your distro and installs the build dependencies (apt, dnf, pacman or zypper; it asks for your `sudo` password)
+2. compiles and links SectrC
+3. installs the binary as **`~/.local/bin/sectr`**, so no root is needed to run it
+4. creates the log folder **`~/.local/state/sectrc/`**
+
+| Option | What it does |
+|---|---|
+| `./setup.sh --skip-deps` | Build and install only, without touching system packages |
+| `./setup.sh --uninstall` | Remove `~/.local/bin/sectr`, keep the logs |
+| `./setup.sh --purge` | Remove the binary **and** the logs |
+
+If `~/.local/bin` is not in your `PATH`, the script tells you the line to add to your shell config.
+
 ### Download a release
 
 Prebuilt Linux x86-64 binaries are attached to every [release](https://github.com/Dogwalker-kryt/SectrC/releases):
@@ -105,22 +128,45 @@ You can give device names with or without `/dev/` (`sda1` and `/dev/sda1` both w
 ./ox -vl 20
 ```
 
-Example output of `ox --list sda1` (made-up values):
+`sectr --list` shows every disk as a tree, with a usage bar (green, yellow, red) for each mounted partition (made-up values):
 
 ```text
-Device: /dev/sda1 (partition), 536870912 bytes
-  Parent: /dev/sda | Model: Samsung_SSD_870 | Vendor: ATA | Bus: ata
-  Filesystem: vfat | Label: - | UUID: 1A2B-3C4D | Mountpoint: /boot/efi
-  Serial: S6PXNM0T123456 | Status: available
+  ● sda  Samsung_SSD_870  931 GiB
+    SATA · ATA · serial S6PXNM0T123456
+       NAME         FS          SIZE  MOUNT          USAGE
+    ├─ sda1         vfat     512 MiB  /boot/efi      ░░░░░░░░░░░░   2%
+    ├─ sda2         ext4     914 GiB  /              ███████░░░░░  58%
+    └─ sda3         swap    16.0 GiB  [swap]
+
+  1 disk · 3 partitions   ·   sectr -l <name> for details
 ```
+
+`sectr --list sda2` shows a detail card:
+
+```text
+  ● /dev/sda2  partition of sda
+    ──────────────────────────────────────────────────
+    Size         914 GiB  (981394882560 bytes)
+    Filesystem   ext4
+    Label        -
+    UUID         0b1c2d3e-4f50-6172-8394-a5b6c7d8e9f0
+    Mounted on   /
+    Usage        ████████████░░░░░░░░  58%  521 GiB used of 899 GiB
+    Model        Samsung_SSD_870
+    ...
+```
+
+Colors are turned off automatically when the output is piped or redirected, or when `NO_COLOR` is set.
 
 > Some fields, such as filesystem probing on unmounted devices, may need `sudo`.
 
 ## Logging
 
-Errors are written to `log.txt` in the **same directory as the `ox` binary**.
-The program must be able to create and write that file, or it will not start.
-Read it with `ox --view-logs` and clear it with `ox --clear-logs`.
+Errors are written to **`~/.local/state/sectrc/log.txt`**, following the [XDG Base Directory spec](https://specifications.freedesktop.org/basedir-spec/latest/).
+If `$XDG_STATE_HOME` is set, `$XDG_STATE_HOME/sectrc/log.txt` is used instead.
+The folder is created automatically on first run.
+
+Read the log with `sectr --view-logs` and clear it with `sectr --clear-logs`.
 
 ## Versioning
 

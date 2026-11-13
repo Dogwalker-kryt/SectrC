@@ -1,5 +1,7 @@
 #include "globals.h"
 #include "Debug/sectr_err.h"
+#include <errno.h>
+#include <sys/stat.h>
 
 globals_t globals = {
     false, false, false, false,
@@ -27,6 +29,49 @@ char *build_path_beside_exe(const char *suffix) {
     if (n < 0 || (size_t)n >= PATH_MAX) {
         free(path_buffer);
         ERR(ERRC_OutOfRange, "built path is too long", "%s", suffix);
+        return NULL;
+    }
+
+    return path_buffer;
+}
+
+/* mkdir -p: creates every missing folder in path (owner-only permissions). */
+static bool make_dirs(char *path) {
+    for (char *p = path + 1; *p; ++p) {
+        if (*p != '/') continue;
+        *p = '\0';
+        bool ok = mkdir(path, 0700) == 0 || errno == EEXIST;
+        *p = '/';
+        if (!ok) return false;
+    }
+    return mkdir(path, 0700) == 0 || errno == EEXIST;
+}
+
+char *build_state_path(const char *file) {
+    const char *xdg = getenv("XDG_STATE_HOME");
+    const char *home = getenv("HOME");
+
+    char *path_buffer = (char*)malloc(PATH_MAX);
+    if (path_buffer == NULL) {
+        ERR(ERRC_AllocationFault, "failed to build state path", "malloc() failed");
+        return NULL;
+    }
+
+    /* XDG spec: relative XDG_STATE_HOME values are invalid and must be ignored. */
+    int n;
+    if (xdg && xdg[0] == '/') n = snprintf(path_buffer, PATH_MAX, "%s/sectrc", xdg);
+    else if (home && home[0] == '/') n = snprintf(path_buffer, PATH_MAX, "%s/.local/state/sectrc", home);
+    else n = -1;
+
+    if (n < 0 || (size_t)n >= PATH_MAX || !make_dirs(path_buffer)) {
+        free(path_buffer);
+        return NULL;
+    }
+
+    size_t dir_len = (size_t)n;
+    n = snprintf(path_buffer + dir_len, PATH_MAX - dir_len, "/%s", file);
+    if (n < 0 || (size_t)n >= PATH_MAX - dir_len) {
+        free(path_buffer);
         return NULL;
     }
 

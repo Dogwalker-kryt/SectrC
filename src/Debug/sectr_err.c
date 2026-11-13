@@ -1,4 +1,5 @@
 #include "sectr_err.h"
+#include "../ui/ui.h"
 
 err_val_t err_val = {
     .errc = ERRC_ZERO,
@@ -44,6 +45,15 @@ void set_err_vals(const char *file, int line, const char *func, enum ErrorCode c
 }
 
 
+/* Terminal view of an error. The log keeps the compact one-line format. */
+static void print_error_box(const char *title, const char *detail, const char *file, int32_t line, const char *func) {
+    fprintf(stderr, "\n  %s%s✘ Error%s  %s%s%s\n", BOLD, RED, RST, BOLD, title, RST);
+    if (detail[0]) fprintf(stderr, "    %s│%s %s\n", RED, RST, detail);
+    fprintf(stderr, "    %s│ at %s:%d (%s)%s\n", GRAY, file, line, func, RST);
+    if (err_val.errc == ERRC_InvalidInput) fprintf(stderr, "\n  %sRun%s %s%s --help%s %sto see all options.%s\n", GRAY, RST, CYAN, ui_program_name, RST, GRAY, RST);
+    fputc('\n', stderr);
+}
+
 int printError_chk(void) {
     if (unlikely(err_val.errc == ERRC_ZERO)) { return 1; }
 
@@ -62,7 +72,7 @@ int printError_chk(void) {
         if (likely(msg != NULL)) {
 
             snprintf(msg, (size_t)len + 1, fmt, std_err, srcfile, line, srcfunc, err);
-            fprintf(stderr, "%s[ERROR]%s %s\n", RED, RST, msg);
+            print_error_box(std_err, err, srcfile, line, srcfunc);
             LOG_ERR(msg);
 
         } else {

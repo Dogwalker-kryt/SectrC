@@ -21,3 +21,6 @@ config.json
 *.swp
 *~
 .DS_Store
+
+# Personal notes
+DEV_GUIDE.md
