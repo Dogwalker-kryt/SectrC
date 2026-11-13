@@ -23,7 +23,7 @@ static help_context_t help_context;
 
 static void print_example(const char *args, const char *description) {
     printf("    %s%s%s %s", CYAN, ui_program_name, RST, args);
-    printf("%*s%s%s%s\n", (int)(22 - strlen(args)), "", GRAY, description, RST);
+    printf("%*s%s%s%s\n", (int32_t)(22 - strlen(args)), "", GRAY, description, RST);
 }
 
 static bool handle_help(const char *value, void *context) {
@@ -146,8 +146,8 @@ static const args_t arg_arr[] = {
     {"--help", "-h", "Show this help message", NULL, ARG_REQ_NO_VALUE, handle_help, &help_context, EXIT_AFTER},
     {"--version", "-v", "Show the current version", NULL, ARG_REQ_NO_VALUE, print_version, NULL, EXIT_AFTER},
     {"--no-color", "-nc", "Disable colored output", NULL, ARG_REQ_NO_VALUE, set_no_color_true, NULL, DONT_EXIT_AFTER},
-    {"--view-logs", "-vl", "View log messages (default: all)", "lines", ARG_REQ_OPTIONAL_VALUE, abstract_view_logs, NULL, DONT_EXIT_AFTER},
-    {"--clear-logs", "-cl", "Clear the log file", NULL, ARG_REQ_NO_VALUE, abstract_clear_logs, NULL, DONT_EXIT_AFTER},
+    {"--view-logs", "-vl", "View log messages (default: all)", "lines", ARG_REQ_OPTIONAL_VALUE, abstract_view_logs, NULL, EXIT_AFTER},
+    {"--clear-logs", "-cl", "Clear the log file", NULL, ARG_REQ_NO_VALUE, abstract_clear_logs, NULL, EXIT_AFTER},
     {"--list", "-l", "List disks, optionally filtered by disk or partition name", "disk-name", ARG_REQ_OPTIONAL_VALUE, list_drives, NULL, EXIT_AFTER},
     {"--fingerprint", "-fp", "Show custom sha256 fingerprint of a drive", "disk-name", ARG_REQ_REQUIRED_VALUE, fingerprint, NULL, EXIT_AFTER},
 };
@@ -168,24 +168,23 @@ int main(int argc, char **argv) {
 
     if (!isatty(STDOUT_FILENO) || getenv("NO_COLOR")) globals.no_color = true;
 
-    for (int i = 1; i < argc; ++i) {
-        if (strcmp(argv[i], "--no-color") == 0 || strcmp(argv[i], "-nc") == 0) globals.no_color = true;
-    }
-
     if (!open_log_file()) {
-        PERR();
-        return EXIT_FAILURE;
+        goto _EXIT_FAILIURE;
     }
 
     if (argc < 2) {
         handle_help(NULL, &help_context);
-        return EXIT_SUCCESS;
+        goto _EXIT_SUCCESS;
     }
 
     if (!parse_args(argc, argv, arg_arr, SIZEOF_ARRAY(arg_arr))) {
-        PERR();
-        return EXIT_FAILURE;
+        goto _EXIT_FAILIURE;
     }
 
+    _EXIT_FAILIURE:
+        PERR();
+        return EXIT_FAILURE;
+
+    _EXIT_SUCCESS:
     return EXIT_SUCCESS;
 }
