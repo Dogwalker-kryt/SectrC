@@ -3,6 +3,8 @@
 #include "../defs.h"
 #include "../vector/vector.h"
 
+#define drive_mt_member_size 13
+
 typedef struct drive_mt {
     char name[64];
     char model[64];

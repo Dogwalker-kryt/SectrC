@@ -5,6 +5,7 @@
 #include "disk_data/disk_data.h"
 #include "list_drives/list_drives.h"
 #include "spinner/spinner.h"
+#include "fingerprint/fingerprint.h"
 #include <errno.h>
 
 #define SECTRC_VERSION "development"
@@ -105,28 +106,35 @@ static void free_drives_vec(Vec *vec) {
 static bool list_drives(const char *value, void *context) {
     (void)context;
 
-    // Vec vec;
-    // if (!vec_init(&vec, 1, sizeof(drive_mt))) {
-    //     ERR(ERRC_AllocationFault, NULL, "Failed to initialize drive vector");
-    //     return false;
-    // }
+    Vec vec;
+    if (!vec_init(&vec, 1, sizeof(drive_mt))) {
+        ERR(ERRC_AllocationFault, NULL, "Failed to initialize drive vector");
+        return false;
+    }
 
-    // if (!get_physical_disk_info(&vec)) {
-    //     vec_free(&vec);
-    //     return false;
-    // }
+    if (!get_physical_disk_info(&vec)) {
+        vec_free(&vec);
+        return false;
+    }
 
-    // bool found = print_disk_infos((const drive_mt*)vec.data, vec.element_count, value);
+    bool found = print_disk_infos((const drive_mt*)vec.data, vec.element_count, value);
 
-    // vec_free(&vec);
-    // if (!found && value) {
-    //     ERR(ERRC_DeviceNotFound, NULL, "No disk or partition matched '%s'", value);
-    //     return false;
-    // }
-    spinner_start_pt();
-    sleep(50);
-    spinner_kill_pt();
+    vec_free(&vec);
+    if (!found && value) {
+        ERR(ERRC_DeviceNotFound, NULL, "No disk or partition matched '%s'", value);
+        return false;
+    }
 
+    return true;
+}
+
+static bool fingerprint(const char *value, void *context) {
+    (void)context;
+
+    char hash[FINGERPRINT_SHA256_HEX_SIZE + 1];
+    if (!fingerprint_disk(value, hash)) return false;
+
+    printf("%s%s%s: %s%s%s\n", BOLD, value, RST, BOLD, hash, RST);
     return true;
 }
 
@@ -137,14 +145,13 @@ static const args_t arg_arr[] = {
     {"--view-logs", "-vl", "View log messages (default: all)", "lines", ARG_REQ_OPTIONAL_VALUE, abstract_view_logs, NULL, DONT_EXIT_AFTER},
     {"--clear-logs", "-cl", "Clear the log file", NULL, ARG_REQ_NO_VALUE, abstract_clear_logs, NULL, DONT_EXIT_AFTER},
     {"--list", "-l", "List disks, optionally filtered by disk or partition name", "disk-name", ARG_REQ_OPTIONAL_VALUE, list_drives, NULL, EXIT_AFTER},
+    {"--fingerprint", "-fp", "Show custom sha256 fingerprint of a drive", "disk-name", ARG_REQ_REQUIRED_VALUE, fingerprint, NULL, EXIT_AFTER},
 };
 
 
 int main(int argc, char **argv) {
     atexit(close_log_file);
     set_globals();
-
-    Vec *drives_data_v = NULL;
 
     help_context.options = arg_arr;
     help_context.option_count = SIZEOF_ARRAY(arg_arr);

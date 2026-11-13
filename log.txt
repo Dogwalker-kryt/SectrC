@@ -21,3 +21,8 @@ t29-10-2026 19:07:07 [ERROR] Value out of range (src/main.cpp:53, main) - No mat
 07-11-2026 14:02:12 [ERROR] No mount entry found for device (src/main.c:132, main) - /dev/sda
 07-11-2026 14:02:17 [ERROR] No mount entry found for device (src/main.c:132, main) - /dev/sda/
 10-11-2026 17:50:00 [ERROR] Device not found (src/main.c:159, main) - No disk or partition matched 'nvme0n2'
+13-11-2026 16:38:10 [ERROR] Invalid input (src/main.c:176, main) - Missing value for option: '-fp'
+13-11-2026 17:40:40 [ERROR] Failed to init vec for fingerprinting (src/main.c:176, main) - 
+13-11-2026 17:41:50 [ERROR] Failed to init vec for fingerprinting (src/main.c:176, main) - 
+13-11-2026 17:56:18 [ERROR] Failed to init vec for fingerprinting (src/main.c:176, main) - 
+13-11-2026 17:56:26 [ERROR] Failed to init vec for fingerprinting (src/main.c:176, main) - 
