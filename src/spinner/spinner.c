@@ -31,7 +31,6 @@ void spinner_start_pt(void) {
     }
 }
 
-
 void spinner_kill_pt() {
     if (!atomic_exchange(&spinner_running, 0)) return;
 

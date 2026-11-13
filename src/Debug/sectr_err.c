@@ -44,8 +44,6 @@ void set_err_vals(const char *file, int line, const char *func, enum ErrorCode c
     va_end(args);
 }
 
-
-/* Terminal view of an error. The log keeps the compact one-line format. */
 static void print_error_box(const char *title, const char *detail, const char *file, int32_t line, const char *func) {
     fprintf(stderr, "\n  %s%s✘ Error%s  %s%s%s\n", BOLD, RED, RST, BOLD, title, RST);
     if (detail[0]) fprintf(stderr, "    %s│%s %s\n", RED, RST, detail);

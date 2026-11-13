@@ -23,7 +23,6 @@ static const char *or_dash(const char *value) {
     return value && value[0] ? value : "-";
 }
 
-/* Filesystem usage like `df`: used / (used + available to users). */
 static bool get_usage(const char *mountpoint, uint64_t *used, uint64_t *total, double *fraction) {
     struct statvfs st;
     if (!mountpoint || mountpoint[0] != '/' || statvfs(mountpoint, &st) != 0 || st.f_blocks == 0) return false;
@@ -48,8 +47,6 @@ static const char *mount_label(const drive_mt *drive) {
     if (strcmp(drive->fstype, "swap") == 0) return "[swap]";
     return "-";
 }
-
-/* ─────────────────────────── overview (tree) ─────────────────────────── */
 
 static void print_tree_row(const drive_mt *part, bool last) {
     char size[16];
@@ -128,8 +125,6 @@ static void print_overview(const drive_mt *disks, size_t count) {
     printf("\n  %s%zu %s · %zu %s   ·   %s", GRAY, disk_count, disk_count == 1 ? "disk" : "disks", part_count, part_count == 1 ? "partition" : "partitions", RST);
     printf("%s%s -l <name>%s %sfor details%s\n\n", CYAN, ui_program_name, RST, GRAY, RST);
 }
-
-/* ─────────────────────────── details (cards) ─────────────────────────── */
 
 static void print_field(const char *key, const char *value) {
     printf("    %s%-12s%s %s%s%s\n", GRAY, key, RST, value && value[0] ? "" : GRAY, or_dash(value), RST);

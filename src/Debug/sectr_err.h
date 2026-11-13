@@ -31,7 +31,6 @@ typedef struct err_val_t {
     const char *std_err_buff;
     char err_buff[ERR_BUFF_SIZE];
 
-    /* Where ERR() was called, so the log points at the real failure. */
     const char *file;
     int line;
     const char *func;
@@ -46,8 +45,6 @@ void set_err_vals(const char *file, int line, const char *func, enum ErrorCode c
 
 int printError_chk(void);
 
-// ERR stores the error together with the file, line and function it was raised in.
-// PERR prints the stored error and writes it to the log.
 #define ERR(code, ...) set_err_vals(__FILE__, __LINE__, __func__, (code), __VA_ARGS__)
 
 #define PERR() printError_chk()

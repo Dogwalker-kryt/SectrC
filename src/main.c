@@ -9,7 +9,6 @@
 #include "ui/ui.h"
 #include <errno.h>
 
-/* Set by the Makefile from `git describe`; see README "Versioning". */
 #ifndef SECTRC_VERSION
 #define SECTRC_VERSION "development"
 #endif
@@ -90,6 +89,7 @@ static bool abstract_view_logs(const char *value, void *context) {
         char *end = NULL;
         errno = 0;
         unsigned long long parsed = strtoull(value, &end, 10);
+        
         if (errno == ERANGE || end == value || *end != '\0') {
             ERR(ERRC_InvalidInput, NULL, "Expected a non-negative line count, got '%s'", value);
             return false;
@@ -152,20 +152,20 @@ static const args_t arg_arr[] = {
     {"--fingerprint", "-fp", "Show custom sha256 fingerprint of a drive", "disk-name", ARG_REQ_REQUIRED_VALUE, fingerprint, NULL, EXIT_AFTER},
 };
 
-
 int main(int argc, char **argv) {
     atexit(close_log_file);
     set_globals();
 
     help_context.options = arg_arr;
     help_context.option_count = SIZEOF_ARRAY(arg_arr);
+
     if (argc > 0 && argv[0][0]) {
         const char *slash = strrchr(argv[0], '/');
         ui_program_name = slash ? slash + 1 : argv[0];
     }
+
     help_context.program_name = ui_program_name;
 
-    /* No colors when piped into a file or another program, or when NO_COLOR is set (no-color.org). */
     if (!isatty(STDOUT_FILENO) || getenv("NO_COLOR")) globals.no_color = true;
 
     for (int i = 1; i < argc; ++i) {

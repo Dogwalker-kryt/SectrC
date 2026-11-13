@@ -38,7 +38,6 @@ bool read_sysfs_text(const char *path, char *buffer, size_t capacity) {
     return true;
 }
 
-
 bool read_sysfs_u64(const char *path, uint64_t *out) {
     if (unlikely(out == NULL)) return false;
 
@@ -61,7 +60,6 @@ bool read_sysfs_u64(const char *path, uint64_t *out) {
     *out = (uint64_t)value;
     return true;
 }
-
 
 uint64_t read_sysfs_uint64(const char *__restrict__ path) {
     FILE *sys_file = fopen(path, "r");

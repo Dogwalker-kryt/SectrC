@@ -17,7 +17,6 @@ extern globals_t globals;
 
 char *build_path_beside_exe(const char *suffix);
 
-/* Returns $XDG_STATE_HOME/sectrc/<file> (default ~/.local/state/sectrc/<file>), creating the folder. */
 char *build_state_path(const char *file);
 
 __always_inline void set_globals(void) {

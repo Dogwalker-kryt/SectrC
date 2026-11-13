@@ -14,7 +14,6 @@ static const char *const banner_lines[BANNER_LINES] = {
     "╚══════╝╚══════╝ ╚═════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝",
 };
 
-/* Same cyan -> purple gradient as setup.sh. */
 static const char *const banner_colors[BANNER_LINES] = {
     "\033[1;38;5;51m", "\033[1;38;5;45m", "\033[1;38;5;39m",
     "\033[1;38;5;63m", "\033[1;38;5;99m", "\033[1;38;5;135m",

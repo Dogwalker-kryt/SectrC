@@ -24,7 +24,6 @@ bool clear_logs(void) {
     return true;
 }
 
-/* "13-11-2026 18:36:25 [ERROR] message" -> gray time, colored tag, normal message. */
 static void print_log_line(const char *line) {
     const char *tag = strchr(line, '[');
     const char *close = tag ? strchr(tag, ']') : NULL;

@@ -35,7 +35,6 @@ char *build_path_beside_exe(const char *suffix) {
     return path_buffer;
 }
 
-/* mkdir -p: creates every missing folder in path (owner-only permissions). */
 static bool make_dirs(char *path) {
     for (char *p = path + 1; *p; ++p) {
         if (*p != '/') continue;
@@ -57,7 +56,6 @@ char *build_state_path(const char *file) {
         return NULL;
     }
 
-    /* XDG spec: relative XDG_STATE_HOME values are invalid and must be ignored. */
     int n;
     if (xdg && xdg[0] == '/') n = snprintf(path_buffer, PATH_MAX, "%s/sectrc", xdg);
     else if (home && home[0] == '/') n = snprintf(path_buffer, PATH_MAX, "%s/.local/state/sectrc", home);

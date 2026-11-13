@@ -1,6 +1,5 @@
 #pragma once
 
-/* Returns code, or "" when colors are disabled (--no-color). Defined in globals.c. */
 const char *sectr_color(const char *code);
 
 #define RED     sectr_color("\033[31m")
@@ -16,5 +15,4 @@ const char *sectr_color(const char *code);
 #define INVERSE sectr_color("\033[7m")
 #define GRAY    "\033[90m" // sectr_color("\033[90m")
 
-/* Cursor movement, not a color: always emitted. */
 #define BACK    "\033[D"

@@ -34,5 +34,4 @@ bool get_mount_point(const char *disk_name, char *buffer, size_t buffer_size);
 
 bool get_FS(const char *disk_name, char *buffer, size_t buffer_size);
 
-/* Adds physical disks and their partitions to an initialized drive_mt vector. */
 Vec *get_physical_disk_info(Vec *vec);
