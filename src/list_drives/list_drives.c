@@ -134,7 +134,7 @@ static void print_card(const drive_mt *drive) {
     char size[16], line[160];
     ui_format_size(drive->size, size, sizeof(size));
 
-    if (is_partition(drive)) printf("\n  %s%s●%s %s%s%s  %spartition of %s%s\n", BOLD, MAGENTA, RST, BOLD, drive->name, RST, GRAY, device_basename(drive->parent), RST);
+    if (is_partition(drive)) printf("\n  %s%s●%s %s%s%s  %spartition of %s%s\n", BOLD, IDK_WHAT_THIS_COLOR_IS, RST, BOLD, drive->name, RST, GRAY, device_basename(drive->parent), RST);
     else printf("\n  %s%s●%s %s%s%s  %s%s disk%s\n", BOLD, CYAN, RST, BOLD, drive->name, RST, GRAY, drive->bus[0] ? bus_label(drive->bus) : drive->type, RST);
 
     printf("    %s──────────────────────────────────────────────────%s\n", GRAY, RST);

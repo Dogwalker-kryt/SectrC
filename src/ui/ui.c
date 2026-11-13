@@ -102,5 +102,5 @@ void ui_ok(const char *fmt, ...) {
 }
 
 void ui_section(const char *title) {
-    printf("\n  %s%s%s%s\n", BOLD, MAGENTA, title, RST);
+    printf("\n  %s%s%s%s\n", BOLD, IDK_WHAT_THIS_COLOR_IS, title, RST);
 }

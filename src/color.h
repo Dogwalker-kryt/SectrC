@@ -15,4 +15,6 @@ const char *sectr_color(const char *code);
 #define INVERSE sectr_color("\033[7m")
 #define GRAY    "\033[90m" // sectr_color("\033[90m")
 
+#define IDK_WHAT_THIS_COLOR_IS sectr_color("\033[1;38;5;99m")
+
 #define BACK    "\033[D"

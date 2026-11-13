@@ -47,7 +47,8 @@ void set_err_vals(const char *file, int line, const char *func, enum ErrorCode c
 static void print_error_box(const char *title, const char *detail, const char *file, int32_t line, const char *func) {
     fprintf(stderr, "\n  %s%s✘ Error%s  %s%s%s\n", BOLD, RED, RST, BOLD, title, RST);
     if (detail[0]) fprintf(stderr, "    %s│%s %s\n", RED, RST, detail);
-    fprintf(stderr, "    %s│ at %s:%d (%s)%s\n", GRAY, file, line, func, RST);
+    // fprintf(stderr, "    %s│%s%s at %s:%d (%s)%s\n", GRAY, RST, GRAY file, line, func, RST);
+    fprintf(stderr, "    %s│%s%s at %s:%d (%s)%s\n", RED, RST, GRAY, file, line, func, RST);
     if (err_val.errc == ERRC_InvalidInput) fprintf(stderr, "\n  %sRun%s %s%s --help%s %sto see all options.%s\n", GRAY, RST, CYAN, ui_program_name, RST, GRAY, RST);
     fputc('\n', stderr);
 }
