@@ -134,14 +134,14 @@ if [[ -n $PM ]]; then ok "Packages  ${B}$PM${R}"; else warn "No supported packag
 step "Installing dependencies"
 
 have_deps() {
-    command -v gcc >/dev/null && command -v g++ >/dev/null && command -v make >/dev/null &&
+    command -v gcc >/dev/null && command -v g++ >/dev/null && command -v make sectrc >/dev/null &&
     command -v pkg-config >/dev/null && pkg-config --exists libcrypto libudev blkid
 }
 
 if [[ $SKIP_DEPS == 1 ]]; then
     info "Skipped (--skip-deps)"
 elif have_deps; then
-    ok "gcc, g++, make, OpenSSL, libudev, libblkid already installed"
+    ok "gcc, g++, make , OpenSSL, libudev, libblkid already installed"
 else
     case "$PM" in
         apt-get) PKGS=(build-essential pkg-config libssl-dev libudev-dev libblkid-dev)
@@ -173,16 +173,16 @@ step "Building SectrC"
 
 JOBS=$(nproc 2>/dev/null || echo 2)
 run "Cleaning old build"   make clean
-run "Compiling and linking ${GRY}($JOBS jobs)${R}" make -j"$JOBS"
-[[ -x ./ox ]] || die "Build finished but ./ox was not produced"
-ok "Binary    ${B}$(du -h ox | cut -f1)${R}  ${GRY}$(./ox --no-color --version)${R}"
+run "Compiling and linking ${GRY}($JOBS jobs)${R}" make sectrc -j"$JOBS"
+[[ -x ./sectrc ]] || die "Build finished but ./sectrc was not produced"
+ok "Binary    ${B}$(du -h sectrc | cut -f1)${R}  ${GRY}$(./sectrc --no-color --version)${R}"
 
 # ───────────────────────────── 4. install ─────────────────────────────
 step "Installing"
 
 mkdir -p "$BIN_DIR" "$STATE_DIR"
 chmod 700 "$STATE_DIR"
-install -m 755 ox "$BIN_DIR/$BIN_NAME"
+install -m 755 sectrc "$BIN_DIR/$BIN_NAME"
 ok "Installed ${B}${BIN_DIR/#$HOME/\~}/$BIN_NAME${R}"
 ok "Log file  ${B}${STATE_DIR/#$HOME/\~}/log.txt${R}"
 
