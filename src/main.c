@@ -146,7 +146,7 @@ static const args_t arg_arr[] = {
     {"--list", "-l", "List disks, optionally filtered by disk or partition name", "disk-name", ARG_REQ_OPTIONAL_VALUE, list_drives, NO_CONTEXT, EXIT_AFTER},
     {"--fingerprint", "-fp", "Show custom sha256 fingerprint of a drive", "disk-name", ARG_REQ_REQUIRED_VALUE, fingerprint, NO_CONTEXT, EXIT_AFTER},
 };
- //
+
 int main(int argc, char **argv) {
     if (!globals.no_log) atexit(close_log_file);
     set_globals();
