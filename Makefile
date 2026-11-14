@@ -8,7 +8,7 @@ BUILD_DIR := build
 DEBUG_BUILD_DIR := build_debug
 
 # Output binary name
-TARGET := ox
+TARGET := sectrc
 
 # Flags
 CFLAGS := -Wall -Wextra -O3 -D_DEFAULT_SOURCE -D_POSIX_C_SOURCE=200112L -pthread
