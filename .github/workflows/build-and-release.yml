@@ -23,8 +23,8 @@ jobs:
 
       - name: Smoke test
         run: |
-          ./ox --version
-          ./ox --help
+          ./sectrc --version
+          ./sectrc --help
 
   release:
     # Only release from pushes to master. Put "[no release]" in a commit
