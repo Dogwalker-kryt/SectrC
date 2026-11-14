@@ -4,9 +4,12 @@
 *.o
 *.d
 
-# Binaries
+# Binaries and pipeline
 /ox
 /ox_debug
+/sectrc
+/sectrc_debug
+
 
 # Runtime files
 log.txt
@@ -16,7 +19,9 @@ config.json
 *.tar.gz
 
 # Editor / OS
-/.vscode/
+/.vscode/*
+!/.vscode/launch.json
+!/.vscode/tasks.json
 .idea/
 *.swp
 *~

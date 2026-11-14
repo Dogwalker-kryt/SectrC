@@ -181,6 +181,8 @@ int main(int argc, char **argv) {
         goto _EXIT_FAILIURE;
     }
 
+    goto _EXIT_SUCCESS;
+
     _EXIT_FAILIURE:
         PERR();
         return EXIT_FAILURE;
