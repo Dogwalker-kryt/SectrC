@@ -87,6 +87,7 @@ static bool abstract_view_logs(const char *value, void *context) {
             ERR(ERRC_InvalidInput, NULL, "Expected a non-negative line count, got '%s'", value);
             return false;
         }
+        
         line_count = (size_t)parsed;
     }
 
