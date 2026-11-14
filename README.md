@@ -5,7 +5,7 @@
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
 **SectrC** is a small, fast Linux command-line tool for inspecting disks and partitions, written in plain C.
-It is a lightweight rewrite of [Sectr-ctl](https://github.com/Dogwalker-kryt/Sectr-ctl) that focuses on the terminal: no GUI and no TUI, just one binary called `ox`.
+It is a lightweight rewrite of [Sectr-ctl](https://github.com/Dogwalker-kryt/Sectr-ctl) that focuses on the terminal: no GUI and no TUI.
 
 > [!WARNING]
 > SectrC is in **early development**. Today it only *reads* disk information. Later versions will add storage-management features that can destroy data.
@@ -17,10 +17,10 @@ It is a lightweight rewrite of [Sectr-ctl](https://github.com/Dogwalker-kryt/Sec
 
 | Feature | Command | Status |
 |---|---|---|
-| List disks and partitions (model, vendor, bus, serial, size, filesystem, UUID, label, mountpoint) | `ox --list` | ✅ |
-| Filter the list to one disk or partition | `ox --list sda` | ✅ |
-| SHA-256 fingerprint of a drive's metadata | `ox --fingerprint nvme0n1` | ✅ |
-| Built-in log viewer and log cleaner | `ox --view-logs`, `ox --clear-logs` | ✅ |
+| List disks and partitions (model, vendor, bus, serial, size, filesystem, UUID, label, mountpoint) | `sectrc --list` | ✅ |
+| Filter the list to one disk or partition | `sectrc --list sda` | ✅ |
+| SHA-256 fingerprint of a drive's metadata | `sectrc --fingerprint nvme0n1` | ✅ |
+| Built-in log viewer and log cleaner | `sectrc --view-logs`, `sectrc --clear-logs` | ✅ |
 | Storage-management operations (from Sectr-ctl) | — | 🚧 planned |
 
 ## Quick start
@@ -37,7 +37,7 @@ The script:
 
 1. detects your distro and installs the build dependencies (apt, dnf, pacman or zypper; it asks for your `sudo` password)
 2. compiles and links SectrC
-3. installs the binary as **`~/.local/bin/sectr`**, so no root is needed to run it
+3. installs the binary as **`~/.local/bin/sectrc`**, so no root is needed to run it
 4. creates the log folder **`~/.local/state/sectrc/`**
 
 | Option | What it does |
@@ -53,8 +53,8 @@ If `~/.local/bin` is not in your `PATH`, the script tells you the line to add to
 Prebuilt Linux x86-64 binaries are attached to every [release](https://github.com/Dogwalker-kryt/SectrC/releases):
 
 ```sh
-tar -xzf ox-v*-linux-x86_64.tar.gz
-./ox --help
+tar -xzf sectrc-v*-linux-x86_64.tar.gz
+./sectrc --help
 ```
 
 You still need the runtime libraries: `libssl`, `libudev` and `libblkid`. Most desktop distributions already have them.
@@ -83,14 +83,14 @@ sudo pacman -S base-devel openssl systemd-libs util-linux-libs
 ```sh
 git clone https://github.com/Dogwalker-kryt/SectrC.git
 cd SectrC
-make            # builds ./ox
-./ox --version
+make            # builds ./sectrc
+./sectrc --version
 ```
 
 | Make target | What it does |
 |---|---|
-| `make` | Optimized build → `./ox` |
-| `make debug` | Debug build with symbols, `-O0` → `./ox_debug` |
+| `make` | Optimized build → `./sectrc` |
+| `make debug` | Debug build with symbols, `-O0` → `./sectrc_debug` |
 | `make run` / `make run_debug` | Build, then run |
 | `make version` | Print the version that will be built into the binary |
 | `make clean` | Delete all build output |
@@ -98,7 +98,7 @@ make            # builds ./ox
 ## Usage
 
 ```text
-ox [options]
+sectrc [options]
 
   --help         -h                Show the help message
   --version      -v                Show the current version
@@ -116,16 +116,16 @@ You can give device names with or without `/dev/` (`sda1` and `/dev/sda1` both w
 
 ```sh
 # Every disk and partition
-./ox --list
+./sectrc --list
 
 # Only nvme0n1 and its partitions
-./ox -l nvme0n1
+./sectrc -l nvme0n1
 
 # Fingerprint a drive
-./ox --fingerprint /dev/sda
+./sectrc --fingerprint /dev/sda
 
 # Show the last 20 log lines
-./ox -vl 20
+./sectrc -vl 20
 ```
 
 `sectr --list` shows every disk as a tree, with a usage bar (green, yellow, red) for each mounted partition (made-up values):
@@ -181,11 +181,11 @@ You never change version numbers by hand. Versions come from **git tags**, and C
    | `feat!: …` or `BREAKING CHANGE:` in the body | major (minor while below `1.0.0`) | `v1.4.0` → `v2.0.0` |
    | anything else (`fix: …`, `refactor: …`, `spinner`, …) | patch | `v0.3.2` → `v0.3.3` |
 
-3. CI creates the tag, builds `ox` with that version built in, and publishes a GitHub Release with the binary and generated release notes.
+3. CI creates the tag, builds `sectrc` with that version built in, and publishes a GitHub Release with the binary and generated release notes.
 
 Add `[no release]` to a commit message to push without releasing.
 
-For local builds, `make` runs `git describe` to get the version, so `ox --version` prints something like:
+For local builds, `make` runs `git describe` to get the version, so `sectrc --version` prints something like:
 
 - `v0.4.0`: built exactly from a release tag
 - `v0.4.0-3-g1a2b3c4`: three commits after `v0.4.0`
