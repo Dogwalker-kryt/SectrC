@@ -67,13 +67,6 @@ static bool print_version(const char *value, void *context) {
     return true;
 }
 
-static bool set_no_color_true(const char *value, void *context) {
-    (void)value;
-    (void)context;
-    globals.no_color = true;
-    return true;
-}
-
 static bool abstract_view_logs(const char *value, void *context) {
     (void)context;
     size_t line_count = 0;
@@ -90,7 +83,7 @@ static bool abstract_view_logs(const char *value, void *context) {
         errno = 0;
         unsigned long long parsed = strtoull(value, &end, 10);
         
-        if (errno == ERANGE || end == value || *end != '\0') {
+        if (unlikely(errno == ERANGE || end == value || *end != '\0')) {
             ERR(ERRC_InvalidInput, NULL, "Expected a non-negative line count, got '%s'", value);
             return false;
         }
@@ -110,12 +103,12 @@ static bool list_drives(const char *value, void *context) {
     (void)context;
 
     Vec vec;
-    if (!vec_init(&vec, 1, sizeof(drive_mt))) {
+    if (unlikely(!vec_init(&vec, 1, sizeof(drive_mt)))) {
         ERR(ERRC_AllocationFault, NULL, "Failed to initialize drive vector");
         return false;
     }
 
-    if (!get_physical_disk_info(&vec)) {
+    if (unlikely(!get_physical_disk_info(&vec))) {
         vec_free(&vec);
         return false;
     }
@@ -143,17 +136,19 @@ static bool fingerprint(const char *value, void *context) {
 }
 
 static const args_t arg_arr[] = {
-    {"--help", "-h", "Show this help message", NULL, ARG_REQ_NO_VALUE, handle_help, &help_context, EXIT_AFTER},
-    {"--version", "-v", "Show the current version", NULL, ARG_REQ_NO_VALUE, print_version, NULL, EXIT_AFTER},
-    {"--no-color", "-nc", "Disable colored output", NULL, ARG_REQ_NO_VALUE, set_no_color_true, NULL, DONT_EXIT_AFTER},
-    {"--view-logs", "-vl", "View log messages (default: all)", "lines", ARG_REQ_OPTIONAL_VALUE, abstract_view_logs, NULL, EXIT_AFTER},
-    {"--clear-logs", "-cl", "Clear the log file", NULL, ARG_REQ_NO_VALUE, abstract_clear_logs, NULL, EXIT_AFTER},
-    {"--list", "-l", "List disks, optionally filtered by disk or partition name", "disk-name", ARG_REQ_OPTIONAL_VALUE, list_drives, NULL, EXIT_AFTER},
-    {"--fingerprint", "-fp", "Show custom sha256 fingerprint of a drive", "disk-name", ARG_REQ_REQUIRED_VALUE, fingerprint, NULL, EXIT_AFTER},
+    {"--help", "-h", "Show this help message", NO_VALUE_NAME, ARG_REQ_NO_VALUE, handle_help, &help_context, EXIT_AFTER},
+    {"--version", "-v", "Show the current version", NO_VALUE_NAME, ARG_REQ_NO_VALUE, print_version, NO_CONTEXT, EXIT_AFTER},
+    {"--no-color", "-nc", "Disable colored output", NO_VALUE_NAME, ARG_REQ_NO_VALUE, set_no_color_true, NO_CONTEXT, DONT_EXIT_AFTER},
+    {"--no-log", "-nl", "Disables logging", NO_VALUE_NAME, ARG_REQ_NO_VALUE, set_nolog_true, NO_CONTEXT, DONT_EXIT_AFTER},
+    {"--stand-alone", "-sa", "Disables logging and config file (coming soon), so you dont need to install it", NO_VALUE_NAME, ARG_REQ_NO_VALUE, set_standalone_true, NO_CONTEXT, DONT_EXIT_AFTER},
+    {"--view-logs", "-vl", "View log messages (default: all)", "lines", ARG_REQ_OPTIONAL_VALUE, abstract_view_logs, NO_CONTEXT, EXIT_AFTER},
+    {"--clear-logs", "-cl", "Clear the log file", NO_VALUE_NAME, ARG_REQ_NO_VALUE, abstract_clear_logs, NO_CONTEXT, EXIT_AFTER},
+    {"--list", "-l", "List disks, optionally filtered by disk or partition name", "disk-name", ARG_REQ_OPTIONAL_VALUE, list_drives, NO_CONTEXT, EXIT_AFTER},
+    {"--fingerprint", "-fp", "Show custom sha256 fingerprint of a drive", "disk-name", ARG_REQ_REQUIRED_VALUE, fingerprint, NO_CONTEXT, EXIT_AFTER},
 };
 
 int main(int argc, char **argv) {
-    atexit(close_log_file);
+    if (!globals.no_log) atexit(close_log_file);
     set_globals();
 
     help_context.options = arg_arr;
@@ -168,16 +163,16 @@ int main(int argc, char **argv) {
 
     if (!isatty(STDOUT_FILENO) || getenv("NO_COLOR")) globals.no_color = true;
 
-    if (!open_log_file()) {
-        goto _EXIT_FAILIURE;
+    if (!globals.no_log) {
+        if (unlikely(!open_log_file())) goto _EXIT_FAILIURE;
     }
 
-    if (argc < 2) {
+    if (unlikely(argc < 2)) {
         handle_help(NULL, &help_context);
         goto _EXIT_SUCCESS;
     }
 
-    if (!parse_args(argc, argv, arg_arr, SIZEOF_ARRAY(arg_arr))) {
+    if (unlikely((!parse_args(argc, argv, arg_arr, SIZEOF_ARRAY(arg_arr))))) {
         goto _EXIT_FAILIURE;
     }
 

@@ -33,10 +33,10 @@ __always_inline void set_globals(void) {
     globals.config_path.path = cfg;
 } 
 
-void set_bsc_true();
+bool set_bsc_true(const char *value, void *context);
 
-void set_nolog_true();
+bool set_nolog_true(const char *value, void *context);
 
-void set_nocolor_true();
+bool set_no_color_true(const char *value, void *context);
 
-void set_standalone_true();
+bool set_standalone_true(const char *value, void *context);

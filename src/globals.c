@@ -76,20 +76,32 @@ char *build_state_path(const char *file) {
     return path_buffer;
 }
 
-void set_bsc_true() {
-    globals.bypass_security_code = true; 
+bool set_bsc_true(const char *value, void *context) {
+    (void)value;
+    (void)context;
+    globals.bypass_security_code = true;
+    return true;
 }
 
-void set_nolog_true() {
-    globals.no_log = true; 
+bool set_nolog_true(const char *value, void *context) {
+    (void)value;
+    (void)context;
+    globals.no_log = true;
+    return true; 
 }
 
-void set_nocolor_true() {
-    globals.no_color = true; 
+bool set_no_color_true(const char *value, void *context) {
+    (void)value;
+    (void)context;
+    globals.no_color = true;
+    return true;
 }
 
-void set_standalone_true() {
-    globals.stand_alone = true; 
+bool set_standalone_true(const char *value, void *context) {
+    (void)value;
+    (void)context;
+    globals.stand_alone = true;
+    return true;
 }
 
 const char *sectr_color(const char *code) {

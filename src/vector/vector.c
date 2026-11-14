@@ -53,7 +53,7 @@ void *vec_get(Vec *vec, uint32_t index) {
 }
 
 void vec_free(Vec *vec) {
-    if (!vec) return;
+    if (unlikely(!vec)) return;
     free(vec->data);
     vec->data = NULL;
     vec->element_count = 0;

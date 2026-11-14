@@ -8,7 +8,8 @@ BUILD_DIR := build
 DEBUG_BUILD_DIR := build_debug
 
 # Output binary name
-TARGET := sectrc
+TARGET := ox
+TARGET_SECTRC := sectrc
 
 # Flags
 CFLAGS := -Wall -Wextra -O3 -D_DEFAULT_SOURCE -D_POSIX_C_SOURCE=200112L -pthread
@@ -35,6 +36,10 @@ all: $(TARGET)
 # Link final binary
 $(TARGET): $(OBJS)
 	$(CC) $(OBJS) -o $(TARGET) $(LDFLAGS)
+
+# Optional alternate binary name
+$(TARGET_SECTRC): $(OBJS)
+	$(CC) $(OBJS) -o $(TARGET_SECTRC) $(LDFLAGS)
 
 # Compile each source file into a matching object path
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
@@ -68,7 +73,7 @@ debug: $(patsubst $(SRC_DIR)/%.c,$(DEBUG_BUILD_DIR)/%.o,$(SRCS))
 
 # Clean build artifacts
 clean:
-	rm -rf $(BUILD_DIR) $(DEBUG_BUILD_DIR) $(TARGET) $(TARGET)_debug
+	rm -rf $(BUILD_DIR) $(DEBUG_BUILD_DIR) $(TARGET) $(TARGET_SECTRC) $(TARGET)_debug
 
 # Run the program
 run: all

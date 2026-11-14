@@ -8,12 +8,13 @@ void ul_to_str(char *buff, size_t buff_size, uint64_t d) {
 }
 
 bool clear_logs(void) {
-    if (!globals.log_path.fd || !globals.log_path.path) {
-        ERR(ERRC_IOError, "Cannot clear logs", "log file is not open");
-        return false;
-    }
+    // if (unlikely(!globals.log_path.fd || !globals.log_path.path)) {
+    //     ERR(ERRC_IOError, "Cannot clear logs", "log file is not open");
+    //     return false;
+    // }
+    // redundant because the sectrc opens the log file at beginning and it will fail if it cant open, so this is unneceray
 
-    if (fflush(globals.log_path.fd) != 0 || !freopen(globals.log_path.path, "w+", globals.log_path.fd)) {
+    if (unlikely(fflush(globals.log_path.fd) != 0) || unlikely(!freopen(globals.log_path.path, "w+", globals.log_path.fd))) {
         ERR(ERRC_IOError, "Failed to clear log file", "%s", globals.log_path.path);
         return false;
     }
@@ -27,7 +28,7 @@ bool clear_logs(void) {
 static void print_log_line(const char *line) {
     const char *tag = strchr(line, '[');
     const char *close = tag ? strchr(tag, ']') : NULL;
-    if (!tag || !close) {
+    if (unlikely(!tag || !close)) {
         printf("  %s", line);
         return;
     }
@@ -37,10 +38,13 @@ static void print_log_line(const char *line) {
 }
 
 bool view_logs(size_t lines_to_count) {
-    if (!globals.log_path.fd) {
-        ERR(ERRC_IOError, "Cannot view logs", "log file is not open");
-        return false;
-    }
+    // if (!globals.log_path.fd) {
+    //     ERR(ERRC_IOError, "Cannot view logs", "log file is not open");
+    //     return false;
+    // }
+    // redundant because the sectrc opens the log file at beginning and it will fail if it cant open, so this is unneceray
+
+
     if (fflush(globals.log_path.fd) != 0 || fseek(globals.log_path.fd, 0, SEEK_SET) != 0) {
         ERR(ERRC_IOError, "Cannot read logs", "failed to seek log file");
         return false;
@@ -54,7 +58,7 @@ bool view_logs(size_t lines_to_count) {
         ++total_lines;
     }
 
-    if (ferror(globals.log_path.fd)) {
+    if (unlikely(ferror(globals.log_path.fd))) {
         free(line);
         ERR(ERRC_IOError, "Cannot read logs", "failed while counting log lines");
         return false;
@@ -85,7 +89,7 @@ bool view_logs(size_t lines_to_count) {
     free(line);
     putchar('\n');
 
-    if (ferror(globals.log_path.fd)) {
+    if (unlikely(ferror(globals.log_path.fd))) {
         ERR(ERRC_IOError, "Cannot read logs", "failed while displaying log lines");
         return false;
     }
@@ -95,7 +99,9 @@ bool view_logs(size_t lines_to_count) {
 char *convert_to_GiB(size_t bytes) {
     char buffer[32];
     double gibibytes = (double)bytes / (1024.0 * 1024.0 * 1024.0);
+
     snprintf(buffer, sizeof(buffer), "%.2f GiB", gibibytes);
+
     return strdup(buffer);
 }
 

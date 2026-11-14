@@ -19,7 +19,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y build-essential libssl-dev libudev-dev libblkid-dev
 
       - name: Build
-        run: make -j"$(nproc)"
+        run: make sectrc -j"$(nproc)"
 
       - name: Smoke test
         run: |
@@ -63,7 +63,7 @@ jobs:
       - name: Build release binary
         if: steps.version.outputs.new == 'true'
         run: |
-          make -j"$(nproc)"
+          make sectrc -j"$(nproc)"
           ./sectrc --version
           tar -czf "sectrc-${{ steps.version.outputs.version }}-linux-x86_64.tar.gz" sectrc README.md LICENSE
 

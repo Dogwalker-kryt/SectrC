@@ -11,6 +11,8 @@ typedef enum {
 
 #define EXIT_AFTER true
 #define DONT_EXIT_AFTER false
+#define NO_CONTEXT NULL
+#define NO_VALUE_NAME NULL
 
 typedef struct args_t {
     const char *long_arg;
