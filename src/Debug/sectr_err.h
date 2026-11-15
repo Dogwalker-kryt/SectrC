@@ -21,6 +21,7 @@ enum ErrorCode {
     ERRC_Unknown, 
     ERRC_Undefined,
     ERRC_TimeFailure,
+    ERRC_MissingData,
     ERRC_ZERO = -1
 };
 

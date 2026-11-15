@@ -26,6 +26,7 @@ const char *errorMessage(int code) {
         case ERRC_NoInput: return "Input was empty";
         case ERRC_FailedInput: return "Input failed";
         case ERRC_AllocationFault: return "Allocation failed";
+        case ERRC_MissingData: return "Missing required data";
         case ERRC_ZERO: return NULL;
         default: return "Unknown Error";
     }
