@@ -131,7 +131,7 @@ static bool fingerprint(const char *value, void *context) {
     char hash[FINGERPRINT_SHA256_HEX_SIZE + 1];
     if (!fingerprint_disk(value, hash)) return false;
 
-    printf("\n  %s%s◆%s %sFingerprint%s  %s%s%s\n", BOLD, MAGENTA, RST, BOLD, RST, GRAY, value, RST);
+    printf("\n  %s%s◆%s %sFingerprint%s  %s%s%s\n", BOLD, PURPLE, RST, BOLD, RST, GRAY, value, RST);
     printf("    %sSHA-256%s  %s%s%s%s\n\n", GRAY, RST, BOLD, GREEN, hash, RST);
     return true;
 }

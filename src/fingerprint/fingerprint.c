@@ -12,7 +12,7 @@ static const char *device_basename(const char *device_name) {
     return basename ? basename + 1 : device_name;
 }
 
-static bool create_fingerprint_of_disk(char *dest, size_t dest_size, const drive_mt *metadata) {
+static bool create_metadata_string_of_disk(char *dest, size_t dest_size, const drive_mt *metadata) {
     int written = snprintf(dest, dest_size,
             "bus=%s\nfilesystem=%s\nlabel=%s\nmodel=%s\n"
             "mountpoint=%s\nname=%s\nparent=%s\nvendor=%s\n"
@@ -68,7 +68,7 @@ bool fingerprint_disk(const char *disk_name, char hash_hex[FINGERPRINT_SHA256_HE
     }
 
     char text[FINGERPRINT_TEXT_BUFFER_SIZE];
-    if (!create_fingerprint_of_disk(text, sizeof(text), metadata)) {
+    if (!create_metadata_string_of_disk(text, sizeof(text), metadata)) {
         vec_free(&vec);
         return false;
     }
