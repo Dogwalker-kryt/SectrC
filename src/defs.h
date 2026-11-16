@@ -10,9 +10,9 @@
 #include <stdarg.h>
 #include <sys/types.h>
 #include <termios.h>
+#include <ctype.h>
 #include "color.h"
 
-#define DEV_SUFFIX "_dev"
 #define NEW_TERMINAL_SCREEN "\033[?1049h"
 #define LEAVE_TERMINAL_SCREEN "\033[?1049l"
 

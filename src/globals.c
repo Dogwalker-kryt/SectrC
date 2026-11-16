@@ -9,6 +9,11 @@ globals_t globals = {
     {NULL, NULL, NULL}
 };
 
+void globals_set_ptr_fd(FILE *dest, FILE *src) {
+    if (unlikely(!dest)) return;
+    dest = src;
+}
+
 char *build_path_beside_exe(const char *suffix) {
     char *exe = elf_run_path();
     if (!exe) return NULL;
@@ -76,6 +81,29 @@ char *build_state_path(const char *file) {
     return path_buffer;
 }
 
+char *build_config_path(const char *file) {
+    const char *home = getenv("HOME");
+    if (!home || home[0] != '/') {
+        ERR(ERRC_MissingData, "Failed to determine home directory", "HOME environment variable is not set or invalid");
+        return NULL;
+    }
+
+    char *path_buffer = (char*)malloc(PATH_MAX);
+    if (!path_buffer) {
+        ERR(ERRC_AllocationFault, "failed to build config path", "malloc() failed");
+        return NULL;
+    }
+
+    int64_t n = snprintf(path_buffer, PATH_MAX, "%s/.config/sectrc/%s", home, file);
+    if (n < 0 || (uint64_t)n >= PATH_MAX) {
+        free(path_buffer);
+        ERR(ERRC_OutOfRange, "config path is too long", "%s/.config/sectrc/%s", home, file);
+        return NULL;
+    }
+
+    return path_buffer;
+}
+
 bool set_bsc_true(const char *value, void *context) {
     (void)value;
     (void)context;
@@ -101,6 +129,16 @@ bool set_standalone_true(const char *value, void *context) {
     (void)value;
     (void)context;
     globals.stand_alone = true;
+    globals.no_log = true;
+    globals.log_path.path = NULL;
+    globals.config_path.path = NULL;
+    return true;
+}
+
+bool set_no_config_true(const char *value, void *context) {
+    (void)value;
+    (void)context;
+    globals.config_path.path = NULL;
     return true;
 }
 

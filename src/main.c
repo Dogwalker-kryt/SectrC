@@ -6,6 +6,7 @@
 #include "list_drives/list_drives.h"
 #include "spinner/spinner.h"
 #include "fingerprint/fingerprint.h"
+#include "config/sectr_config.h"
 #include "ui/ui.h"
 #include <errno.h>
 
@@ -54,9 +55,14 @@ static bool handle_help(const char *value, void *context) {
     print_example("-fp /dev/sda", "fingerprint a drive");
     print_example("-vl 20", "last 20 log lines");
 
+    
+    printf("\n  %sColor: %s\n  Stand-alone: %s", GRAY, globals.no_color ? "false" : "true", globals.stand_alone ? "true" : "false");
+
     char log_path[PATH_MAX];
+    char config_path[PATH_MAX];
     ui_tilde_path(globals.log_path.path ? globals.log_path.path : "-", log_path, sizeof(log_path));
-    printf("\n  %sLogs: %s%s\n\n", GRAY, log_path, RST);
+    ui_tilde_path(globals.config_path.path ? globals.config_path.path : "-", config_path, sizeof(config_path));
+    printf("\n  Logs: %s\n  Config: %s%s\n\n", log_path, config_path, RST);
     return true;
 }
 
@@ -141,7 +147,8 @@ static const args_t arg_arr[] = {
     {"--version", "-v", "Show the current version", NO_VALUE_NAME, ARG_REQ_NO_VALUE, print_version, NO_CONTEXT, EXIT_AFTER},
     {"--no-color", "-nc", "Disable colored output", NO_VALUE_NAME, ARG_REQ_NO_VALUE, set_no_color_true, NO_CONTEXT, DONT_EXIT_AFTER},
     {"--no-log", "-nl", "Disables logging", NO_VALUE_NAME, ARG_REQ_NO_VALUE, set_nolog_true, NO_CONTEXT, DONT_EXIT_AFTER},
-    {"--stand-alone", "-sa", "Disables logging and config file (coming soon), so you dont need to install it", NO_VALUE_NAME, ARG_REQ_NO_VALUE, set_standalone_true, NO_CONTEXT, DONT_EXIT_AFTER},
+    {"--stand-alone", "-sa", "Disables config loading and logging", NO_VALUE_NAME, ARG_REQ_NO_VALUE, set_standalone_true, NO_CONTEXT, DONT_EXIT_AFTER},
+    {"--no-config", "-ncfg", "Disables config loading", NO_VALUE_NAME, ARG_REQ_NO_VALUE, set_no_config_true, NO_CONTEXT, DONT_EXIT_AFTER},
     {"--view-logs", "-vl", "View log messages (default: all)", "lines", ARG_REQ_OPTIONAL_VALUE, abstract_view_logs, NO_CONTEXT, EXIT_AFTER},
     {"--clear-logs", "-cl", "Clear the log file", NO_VALUE_NAME, ARG_REQ_NO_VALUE, abstract_clear_logs, NO_CONTEXT, EXIT_AFTER},
     {"--list", "-l", "List disks, optionally filtered by disk or partition name", "disk-name", ARG_REQ_OPTIONAL_VALUE, list_drives, NO_CONTEXT, EXIT_AFTER},
@@ -149,8 +156,18 @@ static const args_t arg_arr[] = {
 };
 
 int main(int argc, char **argv) {
-    if (!globals.no_log) atexit(close_log_file);
     set_globals();
+
+    // if (!globals.stand_alone && unlikely(!config_load())) goto _EXIT_FAILIURE;
+    // if (globals.stand_alone) globals.no_log = true;
+
+    if (strcmp(argv[1], arg_arr[4].long_arg) == 0 || strcmp(argv[1], arg_arr[4].short_arg) == 0) {
+        set_standalone_true(NULL, NULL);
+    } else if (strcmp(argv[1], arg_arr[5].long_arg) == 0 || strcmp(argv[1], arg_arr[5].short_arg) == 0) {
+        set_no_config_true(NULL, NULL);
+    } else {
+        config_load();
+    }
 
     help_context.options = arg_arr;
     help_context.option_count = SIZEOF_ARRAY(arg_arr);
@@ -164,8 +181,9 @@ int main(int argc, char **argv) {
 
     if (!isatty(STDOUT_FILENO) || getenv("NO_COLOR")) globals.no_color = true;
 
-    if (!globals.no_log) {
+    if (!globals.no_log && !globals.stand_alone) {
         if (unlikely(!open_log_file())) goto _EXIT_FAILIURE;
+        atexit(close_log_file);
     }
 
     if (unlikely(argc < 2)) {
