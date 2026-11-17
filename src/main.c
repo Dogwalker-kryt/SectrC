@@ -69,7 +69,7 @@ static bool handle_help(const char *value, void *context) {
 static bool print_version(const char *value, void *context) {
     (void)value;
     (void)context;
-    printf("%s%sSectrC%s %s\n", BOLD, CYAN, RST, SECTRC_VERSION);
+    printf("%sSectrC%s%s %s%s\n", BOLD, RST, GRAY, SECTRC_VERSION, RST);
     return true;
 }
 
@@ -157,7 +157,7 @@ static const args_t arg_arr[] = {
 
 int main(int argc, char **argv) {
     set_globals();
-    
+
     if (argc > 1 && (strcmp(argv[1], arg_arr[4].long_arg) == 0 || strcmp(argv[1], arg_arr[4].short_arg) == 0)) {
         set_standalone_true(NULL, NULL);
     } else if (argc > 1 && (strcmp(argv[1], arg_arr[5].long_arg) == 0 || strcmp(argv[1], arg_arr[5].short_arg) == 0)) {
