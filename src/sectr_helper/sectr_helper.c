@@ -80,7 +80,7 @@ bool view_logs(size_t lines_to_count) {
         return false;
     }
 
-    printf("\n  %s%s▍ Log%s  %s%s  ·  %" PRIu64 " of %" PRIu64 " lines%s\n\n", BOLD, MAGENTA, RST, GRAY, path, total_lines - lines_to_skip, total_lines, RST);
+    printf("\n  %s%s▍ Log%s  %s%s  ·  %" PRIu64 " of %" PRIu64 " lines%s\n\n", BOLD, PURPLE, RST, GRAY, path, total_lines - lines_to_skip, total_lines, RST);
 
     uint64_t line_number = 0;
     while (getline(&line, &capacity, globals.log_path.fd) != -1) {
