@@ -20,9 +20,9 @@ static bool looks_like_option(const char *token) {
     return token && token[0] == '-' && token[1] != '\0';
 }
 
-static bool set_parse_error(const char *message, const char *token) {
+static uint8_t set_parse_error(const char *message, const char *token) {
     ERR(ERRC_InvalidInput, NULL, message, token);
-    return false;
+    return UINT8_MAX;
 }
 
 static bool is_known_option(const char *token, const args_t *const arg_arr, size_t arg_count) {
@@ -36,7 +36,7 @@ static bool is_known_option(const char *token, const args_t *const arg_arr, size
     return find_arg(token, name_length, arg_arr, arg_count) != NULL;
 }
 
-bool parse_args(int argc, char *const argv[], const args_t *arg_arr, size_t arg_count) {
+uint8_t parse_args(int argc, char *const argv[], const args_t *arg_arr, size_t arg_count) {
 
     for (int i = 1; i < argc; ++i) {
 
@@ -73,12 +73,12 @@ bool parse_args(int argc, char *const argv[], const args_t *arg_arr, size_t arg_
         }
 
         if (arg->operation && !arg->operation(value, arg->context)) {
-            return false;
+            return UINT8_MAX;
         }
         if (arg->exit_after) {
-            return true;
+            return 0;
         }
     }
 
-    return true;
+    return 1;
 }

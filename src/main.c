@@ -157,10 +157,7 @@ static const args_t arg_arr[] = {
 
 int main(int argc, char **argv) {
     set_globals();
-
-    // if (!globals.stand_alone && unlikely(!config_load())) goto _EXIT_FAILIURE;
-    // if (globals.stand_alone) globals.no_log = true;
-
+    
     if (argc > 1 && (strcmp(argv[1], arg_arr[4].long_arg) == 0 || strcmp(argv[1], arg_arr[4].short_arg) == 0)) {
         set_standalone_true(NULL, NULL);
     } else if (argc > 1 && (strcmp(argv[1], arg_arr[5].long_arg) == 0 || strcmp(argv[1], arg_arr[5].short_arg) == 0)) {
@@ -191,9 +188,11 @@ int main(int argc, char **argv) {
         goto _EXIT_SUCCESS;
     }
 
-    if (unlikely((!parse_args(argc, argv, arg_arr, SIZEOF_ARRAY(arg_arr))))) {
+    const uint8_t parse = parse_args(argc, argv, arg_arr, SIZEOF_ARRAY(arg_arr));
+    if (unlikely((parse == UINT8_MAX))) {
         goto _EXIT_FAILIURE;
-    } else {
+
+    } else if (parse == 0) {
         goto _EXIT_SUCCESS;
     }
 

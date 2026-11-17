@@ -29,4 +29,4 @@ typedef struct args_t {
     bool exit_after;
 } args_t;
 
-bool parse_args(int argc, char *const argv[], const args_t *arg_arr, size_t arg_count);
+uint8_t parse_args(int argc, char *const argv[], const args_t *arg_arr, size_t arg_count);
