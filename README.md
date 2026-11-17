@@ -103,11 +103,23 @@ sectrc [options]
   --help         -h                Show the help message
   --version      -v                Show the current version
   --no-color     -nc               Disable colored output
+  --no-log       -nl               Disable logging
+  --stand-alone  -sa               Disable config loading and logging (must be the first argument)
+  --no-config    -ncfg             Disable config loading (must be the first argument)
   --view-logs    -vl  [lines]      Show the log (all lines, or the last N)
   --clear-logs   -cl               Clear the log file
   --list         -l   [disk-name]  List disks, or only one disk / partition
   --fingerprint  -fp  <disk-name>  Show a SHA-256 fingerprint of a drive
 ```
+
+> [!IMPORTANT]
+> `--stand-alone` / `-sa` and `--no-config` / `-ncfg` only work as the **first** argument, because the config is loaded before the other options are parsed.
+> Use one of them at a time; anywhere else on the command line it has no effect.
+>
+> ```sh
+> sectrc -sa --list        # works: no config, no logging
+> sectrc --list -sa        # does NOT work: the config is still loaded
+> ```
 
 Options with a value accept both `--opt value` and `--opt=value`.
 You can give device names with or without `/dev/` (`sda1` and `/dev/sda1` both work).
