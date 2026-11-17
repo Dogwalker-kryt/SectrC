@@ -161,9 +161,9 @@ int main(int argc, char **argv) {
     // if (!globals.stand_alone && unlikely(!config_load())) goto _EXIT_FAILIURE;
     // if (globals.stand_alone) globals.no_log = true;
 
-    if (strcmp(argv[1], arg_arr[4].long_arg) == 0 || strcmp(argv[1], arg_arr[4].short_arg) == 0) {
+    if (argc > 1 && (strcmp(argv[1], arg_arr[4].long_arg) == 0 || strcmp(argv[1], arg_arr[4].short_arg) == 0)) {
         set_standalone_true(NULL, NULL);
-    } else if (strcmp(argv[1], arg_arr[5].long_arg) == 0 || strcmp(argv[1], arg_arr[5].short_arg) == 0) {
+    } else if (argc > 1 && (strcmp(argv[1], arg_arr[5].long_arg) == 0 || strcmp(argv[1], arg_arr[5].short_arg) == 0)) {
         set_no_config_true(NULL, NULL);
     } else {
         config_load();
@@ -193,8 +193,11 @@ int main(int argc, char **argv) {
 
     if (unlikely((!parse_args(argc, argv, arg_arr, SIZEOF_ARRAY(arg_arr))))) {
         goto _EXIT_FAILIURE;
+    } else {
+        goto _EXIT_SUCCESS;
     }
 
+    handle_help(NULL, &help_context);
     goto _EXIT_SUCCESS;
 
     _EXIT_FAILIURE:
