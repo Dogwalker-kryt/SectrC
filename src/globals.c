@@ -9,9 +9,8 @@ globals_t globals = {
     {NULL, NULL, NULL}
 };
 
-void globals_set_ptr_fd(FILE *dest, FILE *src) {
-    if (unlikely(!dest)) return;
-    dest = src;
+void globals_set_ptr_fd(FILE **dest, FILE *src) {
+    *dest = src;
 }
 
 char *build_path_beside_exe(const char *suffix) {
@@ -139,6 +138,13 @@ bool set_no_config_true(const char *value, void *context) {
     (void)value;
     (void)context;
     globals.config_path.path = NULL;
+    return true;
+}
+
+bool set_bypass_security_code_true(const char *value, void *context) {
+    (void)value;
+    (void)context;
+    globals.bypass_security_code = true;
     return true;
 }
 

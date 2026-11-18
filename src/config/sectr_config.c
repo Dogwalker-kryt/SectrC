@@ -100,13 +100,13 @@ FILE *config_file_open(char *config_path) {
 
 void config_file_close() {
     fclose(config.config_file);
-    globals_set_ptr_fd(globals.config_path.fd, NULL);
+    globals_set_ptr_fd(&globals.config_path.fd, NULL);
 }
 
 bool config_load(void) {
     config.config_file = config_file_open(globals.config_path.path);
     if (!config.config_file) return false;
-    globals_set_ptr_fd(globals.config_path.fd, config.config_file);
+    globals_set_ptr_fd(&globals.config_path.fd, config.config_file);
 
     char *line = NULL;
     size_t capacity = 0;

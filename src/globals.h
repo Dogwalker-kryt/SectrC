@@ -15,7 +15,7 @@ typedef struct globals_t {
 
 extern globals_t globals;
 
-void globals_set_ptr_fd(FILE *dest, FILE *src);
+void globals_set_ptr_fd(FILE **dest, FILE *src);
 
 char *build_path_beside_exe(const char *suffix);
 
@@ -46,3 +46,5 @@ bool set_no_color_true(const char *value, void *context);
 bool set_standalone_true(const char *value, void *context);
 
 bool set_no_config_true(const char *value, void *context);
+
+bool set_bypass_security_code_true(const char *value, void *context);

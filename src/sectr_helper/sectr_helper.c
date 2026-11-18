@@ -7,14 +7,39 @@ void ul_to_str(char *buff, size_t buff_size, uint64_t d) {
     snprintf(buff, buff_size, "%" PRIu64, d);
 }
 
-bool clear_logs(void) {
-    // if (unlikely(!globals.log_path.fd || !globals.log_path.path)) {
-    //     ERR(ERRC_IOError, "Cannot clear logs", "log file is not open");
-    //     return false;
-    // }
-    // redundant because the sectrc opens the log file at beginning and it will fail if it cant open, so this is unneceray
+char *device_basename(const char *device_name, char *buf, size_t buf_size) {
+    buf[0] = '\0';
 
-    if (unlikely(fflush(globals.log_path.fd) != 0) || unlikely(!freopen(globals.log_path.path, "w+", globals.log_path.fd))) {
+    size_t end = strlen(device_name);
+    while (end > 0 && device_name[end - 1] == '/') --end;
+
+    size_t start = end;
+    while (start > 0 && device_name[start - 1] != '/') --start;
+
+    size_t length = end - start;
+    if (length == 0 || length >= buf_size) return NULL;
+
+    memcpy(buf, device_name + start, length);
+    buf[length] = '\0';
+    return buf;
+}
+
+bool clear_logs(void) {
+    // the log is not opened with --stand-alone or no_log = true in the config
+    if (unlikely(!globals.log_path.fd)) {
+        ERR(ERRC_DataUnavailable, "Cannot clear logs", "logging is turned off (--stand-alone or no_log in the config)");
+        return false;
+    }
+
+    if (unlikely(fflush(globals.log_path.fd) != 0)) {
+        ERR(ERRC_IOError, "Failed to clear log file", "%s", globals.log_path.path);
+        return false;
+    }
+
+    // freopen() closes the old stream even when it fails, so the global must not keep pointing to it
+    FILE *log_file = freopen(globals.log_path.path, "w+", globals.log_path.fd);
+    globals_set_ptr_fd(&globals.log_path.fd, log_file);
+    if (unlikely(!log_file)) {
         ERR(ERRC_IOError, "Failed to clear log file", "%s", globals.log_path.path);
         return false;
     }
@@ -38,12 +63,11 @@ static void print_log_line(const char *line) {
 }
 
 bool view_logs(size_t lines_to_count) {
-    // if (!globals.log_path.fd) {
-    //     ERR(ERRC_IOError, "Cannot view logs", "log file is not open");
-    //     return false;
-    // }
-    // redundant because the sectrc opens the log file at beginning and it will fail if it cant open, so this is unneceray
-
+    // the log is not opened with --stand-alone or no_log = true in the config
+    if (unlikely(!globals.log_path.fd)) {
+        ERR(ERRC_DataUnavailable, "Cannot view logs", "logging is turned off (--stand-alone or no_log in the config)");
+        return false;
+    }
 
     if (fflush(globals.log_path.fd) != 0 || fseek(globals.log_path.fd, 0, SEEK_SET) != 0) {
         ERR(ERRC_IOError, "Cannot read logs", "failed to seek log file");

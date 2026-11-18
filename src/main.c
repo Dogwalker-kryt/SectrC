@@ -6,6 +6,7 @@
 #include "list_drives/list_drives.h"
 #include "spinner/spinner.h"
 #include "fingerprint/fingerprint.h"
+#include "overwriter/overwriter.h"
 #include "config/sectr_config.h"
 #include "ui/ui.h"
 #include <errno.h>
@@ -53,6 +54,7 @@ static bool handle_help(const char *value, void *context) {
     print_example("--list", "all disks and partitions");
     print_example("-l nvme0n1", "details for one disk and its partitions");
     print_example("-fp /dev/sda", "fingerprint a drive");
+    print_example("-ow sdb", "erase a disk (asks first, needs sudo)");
     print_example("-vl 20", "last 20 log lines");
 
     
@@ -142,6 +144,11 @@ static bool fingerprint(const char *value, void *context) {
     return true;
 }
 
+static bool overwrite(const char *value, void *context) {
+    (void)context;
+    return disk_overwrite(value);
+}
+
 static const args_t arg_arr[] = {
     {"--help", "-h", "Show this help message", NO_VALUE_NAME, ARG_REQ_NO_VALUE, handle_help, &help_context, EXIT_AFTER},
     {"--version", "-v", "Show the current version", NO_VALUE_NAME, ARG_REQ_NO_VALUE, print_version, NO_CONTEXT, EXIT_AFTER},
@@ -149,10 +156,13 @@ static const args_t arg_arr[] = {
     {"--no-log", "-nl", "Disables logging", NO_VALUE_NAME, ARG_REQ_NO_VALUE, set_nolog_true, NO_CONTEXT, DONT_EXIT_AFTER},
     {"--stand-alone", "-sa", "Disables config loading and logging", NO_VALUE_NAME, ARG_REQ_NO_VALUE, set_standalone_true, NO_CONTEXT, DONT_EXIT_AFTER},
     {"--no-config", "-ncfg", "Disables config loading", NO_VALUE_NAME, ARG_REQ_NO_VALUE, set_no_config_true, NO_CONTEXT, DONT_EXIT_AFTER},
+    {"--bypass-security", "-y", "Bypass security code checks", NO_VALUE_NAME, ARG_REQ_NO_VALUE, set_bypass_security_code_true, NO_CONTEXT, DONT_EXIT_AFTER},
     {"--view-logs", "-vl", "View log messages (default: all)", "lines", ARG_REQ_OPTIONAL_VALUE, abstract_view_logs, NO_CONTEXT, EXIT_AFTER},
     {"--clear-logs", "-cl", "Clear the log file", NO_VALUE_NAME, ARG_REQ_NO_VALUE, abstract_clear_logs, NO_CONTEXT, EXIT_AFTER},
     {"--list", "-l", "List disks, optionally filtered by disk or partition name", "disk-name", ARG_REQ_OPTIONAL_VALUE, list_drives, NO_CONTEXT, EXIT_AFTER},
     {"--fingerprint", "-fp", "Show custom sha256 fingerprint of a drive", "disk-name", ARG_REQ_REQUIRED_VALUE, fingerprint, NO_CONTEXT, EXIT_AFTER},
+    // keep new options at the end: main() finds -sa / -ncfg by their index (4 and 5)
+    {"--overwrite", "-ow", "Erase all data on a disk or partition (asks first)", "disk-name", ARG_REQ_REQUIRED_VALUE, overwrite, NO_CONTEXT, EXIT_AFTER},
 };
 
 int main(int argc, char **argv) {

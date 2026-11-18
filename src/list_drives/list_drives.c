@@ -10,11 +10,6 @@
 #define COL_MOUNT 14
 #define BAR_WIDTH 12
 
-static const char *device_basename(const char *device_name) {
-    const char *basename = strrchr(device_name, '/');
-    return basename ? basename + 1 : device_name;
-}
-
 static bool is_partition(const drive_mt *drive) {
     return strcmp(drive->type, "partition") == 0;
 }
@@ -49,12 +44,13 @@ static const char *mount_label(const drive_mt *drive) {
 }
 
 static void print_tree_row(const drive_mt *part, bool last) {
-    char size[16];
+    char size[16], name[DEVICE_NAME_SIZE];
     ui_format_size(part->size, size, sizeof(size));
+    device_basename(part->name, name, sizeof(name));
 
     printf("    %s%s%s ", GRAY, last ? "└─" : "├─", RST);
     fputs(BOLD, stdout);
-    ui_pad(device_basename(part->name), COL_NAME);
+    ui_pad(name, COL_NAME);
     printf("%s %s", RST, CYAN);
     ui_pad(or_dash(part->fstype), COL_FS);
     printf("%s %*s  ", RST, COL_SIZE, size);
@@ -78,10 +74,11 @@ static void print_tree_header(void) {
 }
 
 static void print_disk_header(const drive_mt *disk) {
-    char size[16];
+    char size[16], name[DEVICE_NAME_SIZE];
     ui_format_size(disk->size, size, sizeof(size));
+    device_basename(disk->name, name, sizeof(name));
 
-    printf("\n  %s%s●%s %s%s%s  %s  %s%s%s\n", BOLD, CYAN, RST, BOLD, device_basename(disk->name), RST, or_dash(disk->model), BOLD, size, RST);
+    printf("\n  %s%s●%s %s%s%s  %s  %s%s%s\n", BOLD, CYAN, RST, BOLD, name, RST, or_dash(disk->model), BOLD, size, RST);
 
     printf("    %s", GRAY);
     printf("%s", disk->bus[0] ? bus_label(disk->bus) : disk->type);
@@ -131,10 +128,11 @@ static void print_field(const char *key, const char *value) {
 }
 
 static void print_card(const drive_mt *drive) {
-    char size[16], line[160];
+    char size[16], line[160], parent[DEVICE_NAME_SIZE];
     ui_format_size(drive->size, size, sizeof(size));
+    device_basename(drive->parent, parent, sizeof(parent));
 
-    if (is_partition(drive)) printf("\n  %s%s●%s %s%s%s  %spartition of %s%s\n", BOLD, PURPLE, RST, BOLD, drive->name, RST, GRAY, device_basename(drive->parent), RST);
+    if (is_partition(drive)) printf("\n  %s%s●%s %s%s%s  %spartition of %s%s\n", BOLD, PURPLE, RST, BOLD, drive->name, RST, GRAY, parent, RST);
     else printf("\n  %s%s●%s %s%s%s  %s%s disk%s\n", BOLD, CYAN, RST, BOLD, drive->name, RST, GRAY, drive->bus[0] ? bus_label(drive->bus) : drive->type, RST);
 
     printf("    %s──────────────────────────────────────────────────%s\n", GRAY, RST);
@@ -170,11 +168,15 @@ bool print_disk_infos(const drive_mt *disks, size_t count, const char *disk_name
         return count > 0;
     }
 
-    const char *wanted = device_basename(disk_name);
+    char wanted[DEVICE_NAME_SIZE], name[DEVICE_NAME_SIZE], parent[DEVICE_NAME_SIZE];
+    if (!device_basename(disk_name, wanted, sizeof(wanted))) return false;
+
     size_t printed_count = 0;
 
     for (size_t i = 0; i < count; i++) {
-        bool matches = strcmp(wanted, device_basename(disks[i].name)) == 0 || (disks[i].parent[0] != '\0' && strcmp(wanted, device_basename(disks[i].parent)) == 0);
+        device_basename(disks[i].name, name, sizeof(name));
+        device_basename(disks[i].parent, parent, sizeof(parent));
+        bool matches = strcmp(wanted, name) == 0 || (parent[0] != '\0' && strcmp(wanted, parent) == 0);
         if (!matches) continue;
 
         print_card(&disks[i]);

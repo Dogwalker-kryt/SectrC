@@ -15,6 +15,7 @@ These rules keep SectrC consistent, easy to review, and lightweight. Follow them
 - Keep each `if` statement on one line. Do not wrap its condition or split the statement across lines.
 - Keep function declarations and definitions on one line, including their parameter lists. Do not wrap parameter lists across multiple lines.
 - Match the surrounding file's indentation and brace style when editing existing code.
+- Dont use Comments, Doxygen Comments for function documention are fine
 
 ## Input checks and defensive code
 

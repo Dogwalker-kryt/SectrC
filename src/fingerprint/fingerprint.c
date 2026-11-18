@@ -7,11 +7,6 @@
 
 #define FINGERPRINT_TEXT_BUFFER_SIZE 2048
 
-static const char *device_basename(const char *device_name) {
-    const char *basename = strrchr(device_name, '/');
-    return basename ? basename + 1 : device_name;
-}
-
 static bool create_metadata_string_of_disk(char *dest, size_t dest_size, const drive_mt *metadata) {
     int written = snprintf(dest, dest_size,
             "bus=%s\nfilesystem=%s\nlabel=%s\nmodel=%s\n"
@@ -37,6 +32,13 @@ bool fingerprint_disk(const char *disk_name, char hash_hex[FINGERPRINT_SHA256_HE
     }
 
     hash_hex[0] = '\0';
+
+    char requested_name[DEVICE_NAME_SIZE];
+    if (!device_basename(disk_name, requested_name, sizeof(requested_name))) {
+        ERR(ERRC_InvalidInput, NULL, "'%s' is not a valid disk name", disk_name);
+        return false;
+    }
+
     Vec vec;
     if (!vec_init(&vec, 1, sizeof(drive_mt))) {
         ERR(ERRC_AllocationFault, NULL, "Failed to init vec for fingerprinting");
@@ -49,13 +51,13 @@ bool fingerprint_disk(const char *disk_name, char hash_hex[FINGERPRINT_SHA256_HE
         return false;
     }
 
-    const char *requested_name = device_basename(disk_name);
     const drive_mt *metadata = NULL;
+    char candidate_name[DEVICE_NAME_SIZE];
 
     for (uint32_t i = 0; i < disk_vec->element_count; ++i) {
         const drive_mt *candidate = (const drive_mt *)vec_get(disk_vec, i);
 
-        if (candidate && strcmp(device_basename(candidate->name), requested_name) == 0) {
+        if (candidate && device_basename(candidate->name, candidate_name, sizeof(candidate_name)) && strcmp(candidate_name, requested_name) == 0) {
             metadata = candidate;
             break;
         }

@@ -13,14 +13,14 @@ bool open_log_file(void) {
         return false;
     }
 
-    globals_set_ptr_fd(globals.log_path.fd, log_file);
+    globals_set_ptr_fd(&globals.log_path.fd, log_file);
     return true;
 }
 
 void close_log_file(void) {
     if (globals.log_path.fd == NULL) return;
     fclose(globals.log_path.fd);
-    globals_set_ptr_fd(globals.log_path.fd, NULL);
+    globals_set_ptr_fd(&globals.log_path.fd, NULL);
 }
 
 static const char *log_message(enum LOG_TYPE log_type) {

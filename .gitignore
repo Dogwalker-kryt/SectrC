@@ -29,3 +29,6 @@ config.json
 
 # Personal notes
 DEV_GUIDE.md
+
+# Claude Code local rules (hookify)
+.claude/*.local.md

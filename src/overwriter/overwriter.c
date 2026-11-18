@@ -1,0 +1,331 @@
+#include "overwriter.h"
+#include "../defs.h"
+#include "../globals.h"
+#include "../Debug/sectr_err.h"
+#include "../disk_data/disk_data.h"
+#include "../read_sys_fs/read_sys_fs.h"
+#include "../sectr_helper/sectr_helper.h"
+#include "../security/prompt.h"
+#include "../security/permission.h"
+#include "../spinner/spinner.h"
+#include "../ui/ui.h"
+#include <errno.h>
+#include <inttypes.h>
+#include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <linux/fs.h>
+#include <sys/param.h>
+
+#define WRITE_BUFFER_SIZE (1024 * 1024)
+#define PROGRESS_BAR_WIDTH 30
+#define LOG_MSG_SIZE 256
+#define ERASE_COL_NAME 12
+#define ERASE_COL_SIZE 9
+
+typedef enum {
+    OM_DONE,
+    OM_UNSUPPORTED,
+    OM_FAILED,
+} om_result_t;
+
+
+static int32_t open_drive(const char *disk_name) {
+    // O_EXCL on a block device fails with EBUSY while it (or a partition of it) is mounted, swap, LVM or RAID
+    const int32_t disk = open(disk_name, O_RDWR | O_EXCL | O_CLOEXEC);
+    if (disk >= 0) return disk;
+
+    if (errno == EACCES || errno == EPERM) ERR(ERRC_PermissionDenied, NULL, "Cannot open %s for writing, run it with sudo", disk_name);
+    else if (errno == EBUSY) ERR(ERRC_DeviceBusy, NULL, "%s is in use (mounted, swap, LVM or RAID)", disk_name);
+    else ERR(ERRC_IOError, "Failed to open drive for overwriting", "%s: %s", disk_name, strerror(errno));
+    return -1;
+}
+
+static void close_drive(int32_t disk) {
+    close(disk);
+}
+
+
+typedef struct {
+    bool blkdiscard;
+    bool blksecurediscard;
+} support_t;
+
+static const support_t *check_support(const char *queue_disk_name, support_t *support) {
+    char path_buffer[PATH_MAX];
+
+    snprintf(path_buffer, sizeof(path_buffer), "/sys/block/%s/queue/discard_max_bytes", queue_disk_name);
+    const uint64_t discard_max = read_sysfs_uint64(path_buffer);
+
+    snprintf(path_buffer, sizeof(path_buffer), "/sys/block/%s/queue/discard_granularity", queue_disk_name);
+    const uint64_t discard_granularity = read_sysfs_uint64(path_buffer);
+
+    support->blkdiscard = discard_granularity > 0 && discard_max > 0;
+    support->blksecurediscard = support->blkdiscard;
+    return support;
+}
+
+
+static void print_progress(uint64_t done, uint64_t total) {
+    char done_str[16], total_str[16];
+    ui_format_size(done, done_str, sizeof(done_str));
+    ui_format_size(total, total_str, sizeof(total_str));
+
+    printf("\r    ");
+    ui_bar((double)done / (double)total, PROGRESS_BAR_WIDTH);
+    printf("  %s%s of %s%s   ", GRAY, done_str, total_str, RST);
+    fflush(stdout);
+}
+
+
+static om_result_t om_perform_secure_discard(int32_t fd, uint64_t size) {
+    uint64_t range[2] = {0, size};
+
+    spinner_start_pt();
+    const int32_t result = ioctl(fd, BLKSECDISCARD, &range);
+    const int32_t error = errno;
+    spinner_kill_pt();
+
+    if (result == 0) return OM_DONE;
+    if (error == EOPNOTSUPP) return OM_UNSUPPORTED;
+
+    ERR(ERRC_IOError, "Secure discard failed", "%s", strerror(error));
+    return OM_FAILED;
+}
+
+static om_result_t om_perform_discard(int32_t fd, uint64_t size) {
+    uint64_t range[2] = {0, size};
+
+    spinner_start_pt();
+    const int32_t result = ioctl(fd, BLKDISCARD, &range);
+    const int32_t error = errno;
+    spinner_kill_pt();
+
+    if (result == 0) return OM_DONE;
+    if (error == EOPNOTSUPP) return OM_UNSUPPORTED;
+
+    ERR(ERRC_IOError, "Discard failed", "%s", strerror(error));
+    return OM_FAILED;
+}
+
+static bool om_perform_zeroout(int32_t fd, uint64_t size) {
+    static const char write_buffer[WRITE_BUFFER_SIZE];
+    uint64_t written = 0;
+    uint64_t last_percent = UINT64_MAX;
+
+    while (written < size) {
+        const size_t to_write = (size_t)MIN((uint64_t)sizeof(write_buffer), size - written);
+        const ssize_t result = write(fd, write_buffer, to_write);
+
+        if (result < 0 && errno == EINTR) continue;
+        if (result <= 0) {
+            putchar('\n');
+            ERR(ERRC_IOError, "Failed to write zeros to drive", "at byte %" PRIu64 ": %s", written, result < 0 ? strerror(errno) : "no space left");
+            return false;
+        }
+
+        written += (uint64_t)result;
+
+        const uint64_t percent = written * 100 / size;
+        if (percent != last_percent) {
+            print_progress(written, size);
+            last_percent = percent;
+        }
+    }
+    putchar('\n');
+
+    if (fsync(fd) != 0) {
+        ERR(ERRC_IOError, "Failed to flush zeros to drive", "%s", strerror(errno));
+        return false;
+    }
+
+    return true;
+}
+
+
+static const drive_mt *find_drive(const Vec *vec, const char *wanted) {
+    const drive_mt *drives = vec->data;
+    char name[DEVICE_NAME_SIZE];
+
+    for (uint32_t i = 0; i < vec->element_count; ++i) {
+        if (device_basename(drives[i].name, name, sizeof(name)) && strcmp(name, wanted) == 0) return &drives[i];
+    }
+    return NULL;
+}
+
+static const drive_mt *find_mounted(const Vec *vec, const drive_mt *target) {
+    const drive_mt *drives = vec->data;
+
+    for (uint32_t i = 0; i < vec->element_count; ++i) {
+        const drive_mt *drive = &drives[i];
+        const bool belongs = drive == target || strcmp(drive->parent, target->name) == 0;
+        if (belongs && drive->mountpoint[0] != '\0') return drive;
+    }
+    return NULL;
+}
+
+// one short line per device, just enough to recognize it: name, size, model (disk) or filesystem + label (partition)
+// name_width: smaller for partitions, because their "  ├─ " prefix is wider than "● ", so the sizes still line up
+static void print_erase_line(const char *branch, size_t name_width, const drive_mt *drive) {
+    char name[DEVICE_NAME_SIZE], size[16];
+    device_basename(drive->name, name, sizeof(name));
+    ui_format_size(drive->size, size, sizeof(size));
+
+    printf("    %s%s%s%s", GRAY, branch, RST, BOLD);
+    ui_pad(name, name_width);
+    printf("%s %*s", RST, ERASE_COL_SIZE, size);
+
+    const char *kind = drive->parent[0] ? drive->fstype : drive->model;
+    if (kind[0]) printf("  %s", kind);
+    if (drive->parent[0] && drive->label[0]) printf("  %s\"%s\"%s", GRAY, drive->label, RST);
+    putchar('\n');
+}
+
+static void print_erase_list(const Vec *vec, const drive_mt *target) {
+    const drive_mt *drives = vec->data;
+
+    printf("\n  %s%s!%s %sEverything on this will be erased:%s\n", BOLD, YELLOW, RST, BOLD, RST);
+    print_erase_line("● ", ERASE_COL_NAME + 3, target);
+
+    size_t children = 0;
+    for (uint32_t i = 0; i < vec->element_count; ++i) children += strcmp(drives[i].parent, target->name) == 0;
+
+    size_t printed = 0;
+    for (uint32_t i = 0; i < vec->element_count; ++i) {
+        if (strcmp(drives[i].parent, target->name) != 0) continue;
+        print_erase_line(++printed == children ? "  └─ " : "  ├─ ", ERASE_COL_NAME, &drives[i]);
+    }
+}
+
+static bool erase(int32_t fd, uint64_t size, const char *queue_disk_name, const char **method) {
+    support_t support;
+    check_support(queue_disk_name, &support);
+
+    if (support.blksecurediscard) {
+        printf("    %sTrying secure discard…%s\n", GRAY, RST);
+        const om_result_t result = om_perform_secure_discard(fd, size);
+        if (result == OM_FAILED) return false;
+        if (result == OM_DONE) { *method = "secure discard"; return true; }
+    }
+
+    if (support.blkdiscard) {
+        printf("    %sSecure discard not supported, discarding all blocks…%s\n", GRAY, RST);
+        const om_result_t result = om_perform_discard(fd, size);
+        if (result == OM_FAILED) return false;
+        if (result == OM_DONE) { *method = "discard"; return true; }
+    }
+
+    printf("    %sDiscard not supported, writing zeros (this can take hours)…%s\n", GRAY, RST);
+    if (!om_perform_zeroout(fd, size)) return false;
+    *method = "zero fill";
+    return true;
+}
+
+
+bool disk_overwrite(const char *disk_name) {
+    if (!is_root()) {
+        ERR(ERRC_PermissionDenied, NULL, "This function requires root privileges. Please run with 'sudo'");
+        return false;
+    }
+
+    char wanted[DEVICE_NAME_SIZE];
+    if (!device_basename(disk_name, wanted, sizeof(wanted))) {
+        ERR(ERRC_InvalidInput, NULL, "'%s' is not a valid disk name", disk_name);
+        return false;
+    }
+
+    Vec vec;
+    if (!vec_init(&vec, 8, sizeof(drive_mt))) {
+        ERR(ERRC_AllocationFault, NULL, "Failed to init vec for overwriting");
+        return false;
+    }
+    if (!get_physical_disk_info(&vec)) {
+        vec_free(&vec);
+        return false;
+    }
+
+    const drive_mt *target = find_drive(&vec, wanted);
+    if (!target) {
+        vec_free(&vec);
+        ERR(ERRC_DeviceNotFound, NULL, "No disk or partition named '%s'", wanted);
+        return false;
+    }
+
+    const drive_mt *mounted = find_mounted(&vec, target);
+    if (mounted) {
+        ERR(ERRC_DeviceBusy, "Refusing to overwrite a mounted device", "%s is mounted at %s, unmount it first", mounted->name, mounted->mountpoint);
+        vec_free(&vec);
+        return false;
+    }
+
+    char device_path[DEVICE_NAME_SIZE], queue_disk_name[DEVICE_NAME_SIZE];
+    snprintf(device_path, sizeof(device_path), "%s", target->name);
+    if (!device_basename(target->parent[0] ? target->parent : target->name, queue_disk_name, sizeof(queue_disk_name))) {
+        ERR(ERRC_CorruptedData, NULL, "Bad device name from udev: '%s'", target->name);
+        vec_free(&vec);
+        return false;
+    }
+
+    const int32_t fd = open_drive(device_path);
+    if (fd < 0) {
+        vec_free(&vec);
+        return false;
+    }
+
+    struct stat st;
+    uint64_t size = 0;
+    if (fstat(fd, &st) != 0 || !S_ISBLK(st.st_mode)) {
+        ERR(ERRC_InvalidDevice, NULL, "%s is not a block device", device_path);
+        close_drive(fd);
+        vec_free(&vec);
+        return false;
+    }
+    if (ioctl(fd, BLKGETSIZE64, &size) != 0 || size == 0) {
+        ERR(ERRC_IOError, "Failed to get drive size for overwriting", "%s: %s", device_path, size == 0 ? "size is 0" : strerror(errno));
+        close_drive(fd);
+        vec_free(&vec);
+        return false;
+    }
+
+    char size_str[16];
+    ui_format_size(size, size_str, sizeof(size_str));
+
+    print_erase_list(&vec, target);
+    vec_free(&vec);
+
+    if (!globals.bypass_security_code) {
+        if (!isatty(STDIN_FILENO)) {
+            ERR(ERRC_NoInput, "Cannot ask for confirmation", "stdin is not a terminal, refusing to overwrite %s", device_path);
+            close_drive(fd);
+            return false;
+        }
+
+        if (!prompt_confirm("Erase ALL data on %s%s%s%s (%s)? This cannot be undone.", RED, device_path, RST, BOLD, size_str)) {
+            printf("\n  %sCancelled, nothing was changed.%s\n\n", GRAY, RST);
+
+            char log_msg[LOG_MSG_SIZE];
+            snprintf(log_msg, sizeof(log_msg), "Overwrite of %s cancelled by user", device_path);
+            LOG_INFO(log_msg);
+            
+            close_drive(fd);
+            return true;
+        }
+    }
+
+    char log_msg[LOG_MSG_SIZE];
+    snprintf(log_msg, sizeof(log_msg), "Overwrite of %s (%" PRIu64 " bytes) started%s", device_path, size, globals.bypass_security_code ? " without confirmation" : "");
+    LOG_INFO(log_msg);
+
+    putchar('\n');
+    const char *method = NULL;
+    const bool ok = erase(fd, size, queue_disk_name, &method);
+    close_drive(fd);
+
+    if (!ok) return false;
+
+    snprintf(log_msg, sizeof(log_msg), "Overwrote %s (%" PRIu64 " bytes) using %s", device_path, size, method);
+    LOG_INFO(log_msg);
+    putchar('\n');
+    ui_ok("Overwrote %s%s%s  %s%s using %s%s", BOLD, device_path, RST, GRAY, size_str, method, RST);
+    putchar('\n');
+    return true;
+}
