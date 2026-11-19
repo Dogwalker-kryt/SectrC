@@ -29,14 +29,6 @@ static bool get_usage(const char *mountpoint, uint64_t *used, uint64_t *total, d
     return true;
 }
 
-static const char *bus_label(const char *bus) {
-    if (strcmp(bus, "nvme") == 0) return "NVMe";
-    if (strcmp(bus, "ata") == 0) return "SATA";
-    if (strcmp(bus, "usb") == 0) return "USB";
-    if (strcmp(bus, "scsi") == 0) return "SCSI";
-    return bus;
-}
-
 static const char *mount_label(const drive_mt *drive) {
     if (drive->mountpoint[0]) return drive->mountpoint;
     if (strcmp(drive->fstype, "swap") == 0) return "[swap]";
@@ -81,7 +73,7 @@ static void print_disk_header(const drive_mt *disk) {
     printf("\n  %s%s●%s %s%s%s  %s  %s%s%s\n", BOLD, CYAN, RST, BOLD, name, RST, or_dash(disk->model), BOLD, size, RST);
 
     printf("    %s", GRAY);
-    printf("%s", disk->bus[0] ? bus_label(disk->bus) : disk->type);
+    printf("%s", disk->bus[0] ? ui_bus_label(disk->bus) : disk->type);
     if (disk->vendor[0]) printf(" · %s", disk->vendor);
     if (disk->serial[0]) printf(" · serial %s", disk->serial);
     printf("%s\n", RST);
@@ -133,7 +125,7 @@ static void print_card(const drive_mt *drive) {
     device_basename(drive->parent, parent, sizeof(parent));
 
     if (is_partition(drive)) printf("\n  %s%s●%s %s%s%s  %spartition of %s%s\n", BOLD, PURPLE, RST, BOLD, drive->name, RST, GRAY, parent, RST);
-    else printf("\n  %s%s●%s %s%s%s  %s%s disk%s\n", BOLD, CYAN, RST, BOLD, drive->name, RST, GRAY, drive->bus[0] ? bus_label(drive->bus) : drive->type, RST);
+    else printf("\n  %s%s●%s %s%s%s  %s%s disk%s\n", BOLD, CYAN, RST, BOLD, drive->name, RST, GRAY, drive->bus[0] ? ui_bus_label(drive->bus) : drive->type, RST);
 
     printf("    %s──────────────────────────────────────────────────%s\n", GRAY, RST);
 
@@ -157,7 +149,7 @@ static void print_card(const drive_mt *drive) {
 
     print_field("Model", drive->model);
     print_field("Vendor", drive->vendor);
-    print_field("Bus", drive->bus[0] ? bus_label(drive->bus) : "");
+    print_field("Bus", drive->bus[0] ? ui_bus_label(drive->bus) : "");
     print_field("Serial", drive->serial);
     print_field("Status", drive->status);
 }

@@ -19,3 +19,6 @@ void ui_progress(double fraction, size_t width);
 void ui_ok(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 
 void ui_section(const char *title);
+
+/* "nvme" -> "NVMe", "ata" -> "SATA", "usb" -> "USB", "scsi" -> "SCSI", anything else unchanged. */
+const char *ui_bus_label(const char *bus);

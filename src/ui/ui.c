@@ -114,3 +114,11 @@ void ui_ok(const char *fmt, ...) {
 void ui_section(const char *title) {
     printf("\n  %s%s%s%s\n", BOLD, PURPLE, title, RST);
 }
+
+const char *ui_bus_label(const char *bus) {
+    if (strcmp(bus, "nvme") == 0) return "NVMe";
+    if (strcmp(bus, "ata") == 0) return "SATA";
+    if (strcmp(bus, "usb") == 0) return "USB";
+    if (strcmp(bus, "scsi") == 0) return "SCSI";
+    return bus;
+}

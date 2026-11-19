@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include "overwriter.h"
 #include "ow_ui.h"
 #include "../defs.h"
@@ -18,6 +19,7 @@
 #include <sys/param.h>
 
 #define WRITE_BUFFER_SIZE (1024 * 1024)
+#define SYNC_CHUNK_SIZE (64 * 1024 * 1024)
 #define LOG_MSG_SIZE 256
 
 typedef enum {
@@ -95,9 +97,10 @@ static om_result_t om_perform_discard(int32_t fd, uint64_t size) {
 
 static bool om_perform_zeroout(int32_t fd, uint64_t size) {
     static const char write_buffer[WRITE_BUFFER_SIZE];
-    uint64_t written = 0;
-    uint64_t last_percent = UINT64_MAX;
+    uint64_t written = 0, started = 0, flushed = 0;
+    uint64_t last_percent = 0;
 
+    print_progress(0, size);
     while (written < size) {
         const size_t to_write = (size_t)MIN((uint64_t)sizeof(write_buffer), size - written);
         const ssize_t result = write(fd, write_buffer, to_write);
@@ -110,20 +113,36 @@ static bool om_perform_zeroout(int32_t fd, uint64_t size) {
         }
 
         written += (uint64_t)result;
+        if (written - started < SYNC_CHUNK_SIZE && written < size) continue;
 
-        const uint64_t percent = written * 100 / size;
+        if (started > flushed && sync_file_range(fd, (off_t)flushed, (off_t)(started - flushed), SYNC_FILE_RANGE_WAIT_BEFORE | SYNC_FILE_RANGE_WRITE | SYNC_FILE_RANGE_WAIT_AFTER) != 0) {
+            putchar('\n');
+            ERR(ERRC_IOError, "Failed to write zeros to drive", "at byte %" PRIu64 ": %s", flushed, strerror(errno));
+            return false;
+        }
+        flushed = started;
+
+        if (sync_file_range(fd, (off_t)started, (off_t)(written - started), SYNC_FILE_RANGE_WRITE) != 0) {
+            putchar('\n');
+            ERR(ERRC_IOError, "Failed to write zeros to drive", "at byte %" PRIu64 ": %s", started, strerror(errno));
+            return false;
+        }
+        started = written;
+
+        const uint64_t percent = flushed * 100 / size;
         if (percent != last_percent) {
-            print_progress(written, size);
+            print_progress(flushed, size);
             last_percent = percent;
         }
     }
-    putchar('\n');
 
-    spinner_start_pt("Flushing");
     if (fsync(fd) != 0) {
+        putchar('\n');
         ERR(ERRC_IOError, "Failed to flush zeros to drive", "%s", strerror(errno));
         return false;
     }
+    print_progress(size, size);
+    putchar('\n');
 
     return true;
 }
@@ -253,8 +272,8 @@ bool disk_overwrite(const char *disk_name) {
             return false;
         }
 
-        if (!prompt_confirm("erase all data on %s%s%s?", BOLD, device_path, RST)) {
-            printf("  %scancelled%s\n\n", GRAY, RST);
+        if (!ow_confirm_erase(device_path, size_str)) {
+            ow_print_cancelled();
 
             char log_msg[LOG_MSG_SIZE];
             snprintf(log_msg, sizeof(log_msg), "Overwrite of %s cancelled by user", device_path);
@@ -278,6 +297,6 @@ bool disk_overwrite(const char *disk_name) {
 
     snprintf(log_msg, sizeof(log_msg), "Overwrote %s (%" PRIu64 " bytes) using %s", device_path, size, method);
     LOG_INFO(log_msg);
-    printf("\n  %s%s%s erased  %s%s, %s%s\n\n", BOLD, device_path, RST, GRAY, size_str, method, RST);
+    ow_print_done(device_path, size_str, method);
     return true;
 }
