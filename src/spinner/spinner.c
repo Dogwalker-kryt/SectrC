@@ -7,12 +7,11 @@
 static pthread_t spinner_thread;
 static atomic_int spinner_running = 0;
 
-static void *spinner_run_animation(void* arg) {
-    (void)arg;
+static void *spinner_run_animation(void *arg) {
     int dots = 0;
 
     while (atomic_load(&spinner_running)) {
-        printf("\rRunning%.*s   ", dots + 1, "...");
+        printf("\r%s%.*s   ", (char*)arg, dots + 1, "...");
         fflush(stdout);
 
         dots = (dots + 1) % 3;
@@ -23,10 +22,10 @@ static void *spinner_run_animation(void* arg) {
     return NULL;
 }
 
-void spinner_start_pt(void) {
+void spinner_start_pt(const char *message) {
     if (atomic_exchange(&spinner_running, 1)) return;
 
-    if (pthread_create(&spinner_thread, NULL, spinner_run_animation, NULL) != 0) {
+    if (pthread_create(&spinner_thread, NULL, spinner_run_animation, (void*)message) != 0) {
         atomic_store(&spinner_running, 0);
     }
 }

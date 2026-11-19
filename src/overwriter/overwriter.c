@@ -1,4 +1,5 @@
 #include "overwriter.h"
+#include "ow_ui.h"
 #include "../defs.h"
 #include "../globals.h"
 #include "../Debug/sectr_err.h"
@@ -17,10 +18,7 @@
 #include <sys/param.h>
 
 #define WRITE_BUFFER_SIZE (1024 * 1024)
-#define PROGRESS_BAR_WIDTH 30
 #define LOG_MSG_SIZE 256
-#define ERASE_COL_NAME 12
-#define ERASE_COL_SIZE 9
 
 typedef enum {
     OM_DONE,
@@ -54,10 +52,10 @@ static const support_t *check_support(const char *queue_disk_name, support_t *su
     char path_buffer[PATH_MAX];
 
     snprintf(path_buffer, sizeof(path_buffer), "/sys/block/%s/queue/discard_max_bytes", queue_disk_name);
-    const uint64_t discard_max = read_sysfs_uint64(path_buffer);
+    const uint64_t discard_max = read_sysfs_u64(path_buffer);
 
     snprintf(path_buffer, sizeof(path_buffer), "/sys/block/%s/queue/discard_granularity", queue_disk_name);
-    const uint64_t discard_granularity = read_sysfs_uint64(path_buffer);
+    const uint64_t discard_granularity = read_sysfs_u64(path_buffer);
 
     support->blkdiscard = discard_granularity > 0 && discard_max > 0;
     support->blksecurediscard = support->blkdiscard;
@@ -65,22 +63,10 @@ static const support_t *check_support(const char *queue_disk_name, support_t *su
 }
 
 
-static void print_progress(uint64_t done, uint64_t total) {
-    char done_str[16], total_str[16];
-    ui_format_size(done, done_str, sizeof(done_str));
-    ui_format_size(total, total_str, sizeof(total_str));
-
-    printf("\r    ");
-    ui_bar((double)done / (double)total, PROGRESS_BAR_WIDTH);
-    printf("  %s%s of %s%s   ", GRAY, done_str, total_str, RST);
-    fflush(stdout);
-}
-
-
 static om_result_t om_perform_secure_discard(int32_t fd, uint64_t size) {
     uint64_t range[2] = {0, size};
 
-    spinner_start_pt();
+    spinner_start_pt("Secure discard");
     const int32_t result = ioctl(fd, BLKSECDISCARD, &range);
     const int32_t error = errno;
     spinner_kill_pt();
@@ -95,7 +81,7 @@ static om_result_t om_perform_secure_discard(int32_t fd, uint64_t size) {
 static om_result_t om_perform_discard(int32_t fd, uint64_t size) {
     uint64_t range[2] = {0, size};
 
-    spinner_start_pt();
+    spinner_start_pt("Discard");
     const int32_t result = ioctl(fd, BLKDISCARD, &range);
     const int32_t error = errno;
     spinner_kill_pt();
@@ -133,6 +119,7 @@ static bool om_perform_zeroout(int32_t fd, uint64_t size) {
     }
     putchar('\n');
 
+    spinner_start_pt("Flushing");
     if (fsync(fd) != 0) {
         ERR(ERRC_IOError, "Failed to flush zeros to drive", "%s", strerror(errno));
         return false;
@@ -163,58 +150,25 @@ static const drive_mt *find_mounted(const Vec *vec, const drive_mt *target) {
     return NULL;
 }
 
-// one short line per device, just enough to recognize it: name, size, model (disk) or filesystem + label (partition)
-// name_width: smaller for partitions, because their "  ├─ " prefix is wider than "● ", so the sizes still line up
-static void print_erase_line(const char *branch, size_t name_width, const drive_mt *drive) {
-    char name[DEVICE_NAME_SIZE], size[16];
-    device_basename(drive->name, name, sizeof(name));
-    ui_format_size(drive->size, size, sizeof(size));
-
-    printf("    %s%s%s%s", GRAY, branch, RST, BOLD);
-    ui_pad(name, name_width);
-    printf("%s %*s", RST, ERASE_COL_SIZE, size);
-
-    const char *kind = drive->parent[0] ? drive->fstype : drive->model;
-    if (kind[0]) printf("  %s", kind);
-    if (drive->parent[0] && drive->label[0]) printf("  %s\"%s\"%s", GRAY, drive->label, RST);
-    putchar('\n');
-}
-
-static void print_erase_list(const Vec *vec, const drive_mt *target) {
-    const drive_mt *drives = vec->data;
-
-    printf("\n  %s%s!%s %sEverything on this will be erased:%s\n", BOLD, YELLOW, RST, BOLD, RST);
-    print_erase_line("● ", ERASE_COL_NAME + 3, target);
-
-    size_t children = 0;
-    for (uint32_t i = 0; i < vec->element_count; ++i) children += strcmp(drives[i].parent, target->name) == 0;
-
-    size_t printed = 0;
-    for (uint32_t i = 0; i < vec->element_count; ++i) {
-        if (strcmp(drives[i].parent, target->name) != 0) continue;
-        print_erase_line(++printed == children ? "  └─ " : "  ├─ ", ERASE_COL_NAME, &drives[i]);
-    }
-}
-
 static bool erase(int32_t fd, uint64_t size, const char *queue_disk_name, const char **method) {
     support_t support;
     check_support(queue_disk_name, &support);
 
     if (support.blksecurediscard) {
-        printf("    %sTrying secure discard…%s\n", GRAY, RST);
+        printf("  %ssecure discard…%s\n", GRAY, RST);
         const om_result_t result = om_perform_secure_discard(fd, size);
         if (result == OM_FAILED) return false;
         if (result == OM_DONE) { *method = "secure discard"; return true; }
     }
 
     if (support.blkdiscard) {
-        printf("    %sSecure discard not supported, discarding all blocks…%s\n", GRAY, RST);
+        printf("  %sdiscarding…%s\n", GRAY, RST);
         const om_result_t result = om_perform_discard(fd, size);
         if (result == OM_FAILED) return false;
         if (result == OM_DONE) { *method = "discard"; return true; }
     }
 
-    printf("    %sDiscard not supported, writing zeros (this can take hours)…%s\n", GRAY, RST);
+    printf("  %swriting zeros, this can take hours%s\n", GRAY, RST);
     if (!om_perform_zeroout(fd, size)) return false;
     *method = "zero fill";
     return true;
@@ -299,8 +253,8 @@ bool disk_overwrite(const char *disk_name) {
             return false;
         }
 
-        if (!prompt_confirm("Erase ALL data on %s%s%s%s (%s)? This cannot be undone.", RED, device_path, RST, BOLD, size_str)) {
-            printf("\n  %sCancelled, nothing was changed.%s\n\n", GRAY, RST);
+        if (!prompt_confirm("erase all data on %s%s%s?", BOLD, device_path, RST)) {
+            printf("  %scancelled%s\n\n", GRAY, RST);
 
             char log_msg[LOG_MSG_SIZE];
             snprintf(log_msg, sizeof(log_msg), "Overwrite of %s cancelled by user", device_path);
@@ -324,8 +278,6 @@ bool disk_overwrite(const char *disk_name) {
 
     snprintf(log_msg, sizeof(log_msg), "Overwrote %s (%" PRIu64 " bytes) using %s", device_path, size, method);
     LOG_INFO(log_msg);
-    putchar('\n');
-    ui_ok("Overwrote %s%s%s  %s%s using %s%s", BOLD, device_path, RST, GRAY, size_str, method, RST);
-    putchar('\n');
+    printf("\n  %s%s%s erased  %s%s, %s%s\n\n", BOLD, device_path, RST, GRAY, size_str, method, RST);
     return true;
 }

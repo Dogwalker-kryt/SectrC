@@ -10,7 +10,7 @@ typedef enum {
     PROMPT_INVALID,
 } prompt_answer_t;
 
-/* Prints "  ? <message>  [y/N] " to stderr, without a newline. printf-style. */
+/* Prints "  <message> [y/N] " to stderr, without a newline. printf-style. */
 void print_prompt(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 
 /* Reads one line from stdin.

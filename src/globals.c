@@ -1,6 +1,7 @@
 #include "globals.h"
 #include "Debug/sectr_err.h"
 #include <errno.h>
+#include <pwd.h>
 #include <sys/stat.h>
 
 globals_t globals = {
@@ -80,8 +81,17 @@ char *build_state_path(const char *file) {
     return path_buffer;
 }
 
+static const char *config_home(void) {
+    const char *sudo_user = getenv("SUDO_USER");
+    if (geteuid() != 0 || !sudo_user || sudo_user[0] == '\0') return getenv("HOME");
+
+    const struct passwd *user = getpwnam(sudo_user);
+    if (!user || !user->pw_dir || user->pw_dir[0] != '/') return getenv("HOME");
+    return user->pw_dir;
+}
+
 char *build_config_path(const char *file) {
-    const char *home = getenv("HOME");
+    const char *home = config_home();
     if (!home || home[0] != '/') {
         ERR(ERRC_MissingData, "Failed to determine home directory", "HOME environment variable is not set or invalid");
         return NULL;

@@ -89,6 +89,19 @@ void ui_bar(double fraction, size_t width) {
     printf("%s %s%s%3.0f%%%s", RST, BOLD, color, fraction * 100.0, RST);
 }
 
+void ui_progress(double fraction, size_t width) {
+    if (fraction < 0.0) fraction = 0.0;
+    if (fraction > 1.0) fraction = 1.0;
+
+    size_t filled = (size_t)(fraction * (double)width);
+
+    fputs(PURPLE, stdout);
+    for (size_t i = 0; i < filled; ++i) fputs("━", stdout);
+    fputs(GRAY, stdout);
+    for (size_t i = filled; i < width; ++i) fputs("─", stdout);
+    printf("%s %3d%%", RST, (int32_t)(fraction * 100.0));
+}
+
 void ui_ok(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);

@@ -61,7 +61,7 @@
 //     return true;
 // }
 
-uint64_t read_sysfs_uint64(const char *restrict path) {
+uint64_t read_sysfs_u64(const char *restrict path) {
     FILE *sys_file = fopen(path, "r");
     if (!sys_file) return 0;
 

@@ -14,6 +14,8 @@ void ui_pad(const char *text, size_t width);
 
 void ui_bar(double fraction, size_t width);
 
+void ui_progress(double fraction, size_t width);
+
 void ui_ok(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
 
 void ui_section(const char *title);

@@ -4,9 +4,9 @@
 #define PROMPT_LINE_SIZE 16
 
 static void vprint_prompt(const char *fmt, va_list args) {
-    fprintf(stderr, "  %s%s?%s %s", BOLD, YELLOW, RST, BOLD);
+    fputs("  ", stderr);
     vfprintf(stderr, fmt, args);
-    fprintf(stderr, "%s  %s[y/N]%s ", RST, GRAY, RST);
+    fprintf(stderr, " %s[y/N]%s ", GRAY, RST);
     fflush(stderr);
 }
 
@@ -60,9 +60,9 @@ bool prompt_confirm(const char *fmt, ...) {
         prompt_answer_t answer = get_prompt_answer();
         if (answer != PROMPT_INVALID) return answer == PROMPT_YES;
 
-        fprintf(stderr, "    %sPlease answer %sy%s%s or %sn%s%s.%s\n", YELLOW, BOLD, RST, YELLOW, BOLD, RST, YELLOW, RST);
+        fprintf(stderr, "  %stype y or n%s\n", GRAY, RST);
     }
 
-    fprintf(stderr, "    %sNo valid answer, treating it as no.%s\n", GRAY, RST);
+    // the caller prints "cancelled", so nothing extra here
     return false;
 }
