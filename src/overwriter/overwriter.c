@@ -96,19 +96,24 @@ static om_result_t om_perform_discard(int32_t fd, uint64_t size) {
 }
 
 static bool om_perform_zeroout(int32_t fd, uint64_t size) {
-    static const char write_buffer[WRITE_BUFFER_SIZE];
+    char *write_buffer = calloc(WRITE_BUFFER_SIZE, 1);
+    if (!write_buffer) {
+        ERR(ERRC_AllocationFault, NULL, "Failed to allocate zero-fill buffer");
+        return false;
+    }
     uint64_t written = 0, started = 0, flushed = 0;
     uint64_t last_percent = 0;
 
     print_progress(0, size);
     while (written < size) {
-        const size_t to_write = (size_t)MIN((uint64_t)sizeof(write_buffer), size - written);
+        const size_t to_write = (size_t)MIN((uint64_t)WRITE_BUFFER_SIZE, size - written);
         const ssize_t result = write(fd, write_buffer, to_write);
 
         if (result < 0 && errno == EINTR) continue;
         if (result <= 0) {
             putchar('\n');
             ERR(ERRC_IOError, "Failed to write zeros to drive", "at byte %" PRIu64 ": %s", written, result < 0 ? strerror(errno) : "no space left");
+            free(write_buffer);
             return false;
         }
 
@@ -118,6 +123,7 @@ static bool om_perform_zeroout(int32_t fd, uint64_t size) {
         if (started > flushed && sync_file_range(fd, (off_t)flushed, (off_t)(started - flushed), SYNC_FILE_RANGE_WAIT_BEFORE | SYNC_FILE_RANGE_WRITE | SYNC_FILE_RANGE_WAIT_AFTER) != 0) {
             putchar('\n');
             ERR(ERRC_IOError, "Failed to write zeros to drive", "at byte %" PRIu64 ": %s", flushed, strerror(errno));
+            free(write_buffer);
             return false;
         }
         flushed = started;
@@ -125,6 +131,7 @@ static bool om_perform_zeroout(int32_t fd, uint64_t size) {
         if (sync_file_range(fd, (off_t)started, (off_t)(written - started), SYNC_FILE_RANGE_WRITE) != 0) {
             putchar('\n');
             ERR(ERRC_IOError, "Failed to write zeros to drive", "at byte %" PRIu64 ": %s", started, strerror(errno));
+            free(write_buffer);
             return false;
         }
         started = written;
@@ -139,11 +146,13 @@ static bool om_perform_zeroout(int32_t fd, uint64_t size) {
     if (fsync(fd) != 0) {
         putchar('\n');
         ERR(ERRC_IOError, "Failed to flush zeros to drive", "%s", strerror(errno));
+        free(write_buffer);
         return false;
     }
     print_progress(size, size);
     putchar('\n');
 
+    free(write_buffer);
     return true;
 }
 
