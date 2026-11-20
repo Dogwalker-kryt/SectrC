@@ -7,6 +7,7 @@
 #include "spinner/spinner.h"
 #include "fingerprint/fingerprint.h"
 #include "overwriter/overwriter.h"
+#include "clone/clone.h"
 #include "config/sectr_config.h"
 #include "ui/ui.h"
 #include <errno.h>
@@ -55,6 +56,7 @@ static bool handle_help(const char *value, void *context) {
     print_example("-l nvme0n1", "details for one disk and its partitions");
     print_example("-fp /dev/sda", "fingerprint a drive");
     print_example("-ow sdb", "erase a disk (asks first, needs sudo)");
+    print_example("-cp sda:sdb", "clone sda onto sdb (asks first, needs sudo)");
     print_example("-vl 20", "last 20 log lines");
 
     
@@ -149,6 +151,20 @@ static bool overwrite(const char *value, void *context) {
     return disk_overwrite(value);
 }
 
+static bool clone_drive(const char *value, void *context) {
+    (void)context;
+
+    const char *colon = strchr(value, ':');
+    if (!colon || colon == value || colon[1] == '\0' || strchr(colon + 1, ':')) {
+        ERR(ERRC_InvalidInput, NULL, "Expected <source>:<target> like sda:sdb, got '%s'", value);
+        return false;
+    }
+
+    char src[PATH_MAX];
+    snprintf(src, sizeof(src), "%.*s", (int32_t)(colon - value), value);
+    return disk_clone(colon + 1, src);
+}
+
 static const args_t arg_arr[] = {
     {"--help", "-h", "Show this help message", NO_VALUE_NAME, ARG_REQ_NO_VALUE, handle_help, &help_context, EXIT_AFTER},
     {"--version", "-v", "Show the current version", NO_VALUE_NAME, ARG_REQ_NO_VALUE, print_version, NO_CONTEXT, EXIT_AFTER},
@@ -163,6 +179,7 @@ static const args_t arg_arr[] = {
     {"--fingerprint", "-fp", "Show custom sha256 fingerprint of a drive", "disk-name", ARG_REQ_REQUIRED_VALUE, fingerprint, NO_CONTEXT, EXIT_AFTER},
     // keep new options at the end: main() finds -sa / -ncfg by their index (4 and 5)
     {"--overwrite", "-ow", "Erase all data on a disk or partition (asks first)", "disk-name", ARG_REQ_REQUIRED_VALUE, overwrite, NO_CONTEXT, EXIT_AFTER},
+    {"--clone", "-cp", "Copy a disk or partition onto another one (asks first)", "src:dest", ARG_REQ_REQUIRED_VALUE, clone_drive, NO_CONTEXT, EXIT_AFTER},
 };
 
 int main(int argc, char **argv) {

@@ -241,6 +241,7 @@ bool disk_overwrite(const char *disk_name) {
     const int32_t fd = open_drive(device_path);
     if (fd < 0) {
         vec_free(&vec);
+        ERR(ERRC_IOError, NULL, "Failed to open %s, for overwriting", disk_name);
         return false;
     }
 

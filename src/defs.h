@@ -29,6 +29,8 @@
 #define PATH_MAX 4096
 #endif
 
+typedef int32_t fd_t;
+
 #define LOG_PATH_SLICE "/data/log.dat"
 #define CONFIG_PATH_SLICE "/data/config.conf"
 
