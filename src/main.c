@@ -179,7 +179,7 @@ static const args_t arg_arr[] = {
     {"--no-log", "-nl", "Disables logging", NO_VALUE_NAME, ARG_REQ_NO_VALUE, set_nolog_true, NO_CONTEXT, DONT_EXIT_AFTER},
     {"--stand-alone", "-sa", "Disables config loading and logging", NO_VALUE_NAME, ARG_REQ_NO_VALUE, set_standalone_true, NO_CONTEXT, DONT_EXIT_AFTER},
     {"--no-config", "-ncfg", "Disables config loading", NO_VALUE_NAME, ARG_REQ_NO_VALUE, set_no_config_true, NO_CONTEXT, DONT_EXIT_AFTER},
-    {"--bypass-security", "-y", "Bypass security code checks", NO_VALUE_NAME, ARG_REQ_NO_VALUE, set_bypass_security_code_true, NO_CONTEXT, DONT_EXIT_AFTER},
+    {"--bypass-security", "-y", "bypass 'are you sure' qestions", NO_VALUE_NAME, ARG_REQ_NO_VALUE, set_bypass_security_code_true, NO_CONTEXT, DONT_EXIT_AFTER},
     {"--view-logs", "-vl", "View log messages (default: all)", "lines", ARG_REQ_OPTIONAL_VALUE, abstract_view_logs, NO_CONTEXT, EXIT_AFTER},
     {"--clear-logs", "-cl", "Clear the log file", NO_VALUE_NAME, ARG_REQ_NO_VALUE, abstract_clear_logs, NO_CONTEXT, EXIT_AFTER},
     {"--list", "-l", "List disks, optionally filtered by disk or partition name", "disk-name", ARG_REQ_OPTIONAL_VALUE, list_drives, NO_CONTEXT, EXIT_AFTER},
