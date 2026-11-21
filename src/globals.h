@@ -30,17 +30,13 @@ __always_inline void set_globals(void) {
     globals.stand_alone = false;
 
     char *log = build_state_path("log.txt");
-    // if (!log) log = build_path_beside_exe("/log.txt");
     char *cfg = build_config_path("config.conf");
 
     globals.log_path.path = log;
     globals.config_path.path = cfg;
 } 
 
-__always_inline void free_globals(void) {
-    free(globals.log_path.path);
-    free(globals.config_path.path);
-}
+void free_globals(void);
 
 bool set_bsc_true(const char *value, void *context);
 

@@ -94,7 +94,7 @@ static bool convert_stats_to_unit(io_stats *stats, io_stats_fmt *fmt_stats) {
         case UNIT_COUNT:
         default:
             snprintf(buf, FMT_BUF_SIZE, "%" PRIu64 " %s", raw,
-                     i == io_in_flight ? "in flight now" : "count");
+                     i == io_in_flight ? " " : " ");
             break;
         }
 
@@ -191,7 +191,7 @@ bool io_statistics(const char *disk_name) {
 
     io_stats *stats = read_io_stats(path_buffer);
     if (!stats) {
-        // ERR(ERRC_IOError, "Failed to read %s's io statistics", (const char*)basename);
+        ERR(ERRC_IOError, NULL, "Failed to read %s's io statistics", (const char*)basename);
         free(path_buffer);
         return false;
     }

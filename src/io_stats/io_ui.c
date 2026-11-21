@@ -11,6 +11,9 @@ static void print_field(const char *key, const char *value) {
         printf("%s\n", value);
         return;
     }
+
+    if (strcmp(rest, "count") == 0) rest = " ";
+
     printf("%.*s%s%s%s\n", (int32_t)(rest - value), value, GRAY, rest, RST);
 }
 
