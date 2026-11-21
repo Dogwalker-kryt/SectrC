@@ -20,3 +20,5 @@ bool clear_logs(void);
 bool view_logs(size_t lines_to_count);
 
 char *convert_to_GiB(size_t bytes);
+
+char *llu_to_str(__llu value, char *buffer, size_t size);

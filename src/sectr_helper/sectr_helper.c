@@ -129,3 +129,7 @@ char *convert_to_GiB(size_t bytes) {
     return strdup(buffer);
 }
 
+char *llu_to_str(__llu value, char *buffer, size_t size) {
+    int n = snprintf(buffer, size, "%llu", value);
+    return n >= 0 && (size_t)n < size ? buffer : NULL;
+}

@@ -31,6 +31,9 @@
 
 typedef int32_t fd_t;
 
+typedef unsigned long long __llu;
+typedef unsigned long __lu;
+
 #define LOG_PATH_SLICE "/data/log.dat"
 #define CONFIG_PATH_SLICE "/data/config.conf"
 
