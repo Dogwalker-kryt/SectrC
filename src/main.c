@@ -184,13 +184,13 @@ static const args_t arg_arr[] = {
     {"--clear-logs", "-cl", "Clear the log file", NO_VALUE_NAME, ARG_REQ_NO_VALUE, abstract_clear_logs, NO_CONTEXT, EXIT_AFTER},
     {"--list", "-l", "List disks, optionally filtered by disk or partition name", "disk-name", ARG_REQ_OPTIONAL_VALUE, list_drives, NO_CONTEXT, EXIT_AFTER},
     {"--fingerprint", "-fp", "Show custom sha256 fingerprint of a drive", "disk-name", ARG_REQ_REQUIRED_VALUE, fingerprint, NO_CONTEXT, EXIT_AFTER},
-    // keep new options at the end: main() finds -sa / -ncfg by their index (4 and 5)
     {"--overwrite", "-ow", "Erase all data on a disk or partition (asks first)", "disk-name", ARG_REQ_REQUIRED_VALUE, overwrite, NO_CONTEXT, EXIT_AFTER},
     {"--clone", "-cp", "Copy a disk or partition onto another one (asks first)", "src:dest", ARG_REQ_REQUIRED_VALUE, clone_drive, NO_CONTEXT, EXIT_AFTER},
     {"--info", "-i", "Show I/O stats of a disk or partition since boot", "disk-name", ARG_REQ_REQUIRED_VALUE, io_info, NO_CONTEXT, EXIT_AFTER}
 };
 
 int main(int argc, char **argv) {
+    atexit(free_globals);
     set_globals();
 
     if (argc > 1 && (strcmp(argv[1], arg_arr[4].long_arg) == 0 || strcmp(argv[1], arg_arr[4].short_arg) == 0)) {

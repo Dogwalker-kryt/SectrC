@@ -37,6 +37,11 @@ __always_inline void set_globals(void) {
     globals.config_path.path = cfg;
 } 
 
+__always_inline void free_globals(void) {
+    free(globals.log_path.path);
+    free(globals.config_path.path);
+}
+
 bool set_bsc_true(const char *value, void *context);
 
 bool set_nolog_true(const char *value, void *context);
