@@ -13,6 +13,7 @@
 #include <errno.h>
 #include "io_stats/io_stats.h"
 #include "disk_health/health.h"
+#include "mount/mount.h"
 
 #ifndef SECTRC_VERSION
 #define SECTRC_VERSION "development"
@@ -176,6 +177,25 @@ static bool health_info(const char *value, void *context) {
     return disk_health(value);
 }
 
+static bool mount(const char *value, void *context) {
+    (void)context;
+
+    const char *colon = strchr(value, ':');
+    if (!colon || colon == value || colon[1] == '\0' || strchr(colon + 1, ':')) {
+        ERR(ERRC_InvalidInput, NULL, "Expected <source>:<target> like sda:/mnt/sda, got '%s'", value);
+        return false;
+    }
+
+    char src[PATH_MAX];
+    snprintf(src, sizeof(src), "%.*s", (int32_t)(colon - value), value);
+    return disk_mount(src, colon + 1);
+}
+
+static bool unmount(const char *value, void *context) {
+    (void)context;
+    return disk_unmount(value);
+}
+
 static const args_t arg_arr[] = {
     {"--help", "-h", "Show this help message", NO_VALUE_NAME, ARG_REQ_NO_VALUE, handle_help, &help_context, EXIT_AFTER},
     {"--version", "-v", "Show the current version", NO_VALUE_NAME, ARG_REQ_NO_VALUE, print_version, NO_CONTEXT, EXIT_AFTER},
@@ -192,6 +212,8 @@ static const args_t arg_arr[] = {
     {"--clone", "-cp", "Copy a disk or partition onto another one (asks first)", "src:dest", ARG_REQ_REQUIRED_VALUE, clone_drive, NO_CONTEXT, EXIT_AFTER},
     {"--info", "-i", "Show I/O stats of a disk or partition since boot", "disk-name", ARG_REQ_REQUIRED_VALUE, io_info, NO_CONTEXT, EXIT_AFTER},
     {"--health", "-hl", "Show SMART health of a SATA or NVMe disk", "disk-name", ARG_REQ_REQUIRED_VALUE, health_info, NO_CONTEXT, EXIT_AFTER},
+    {"--mount", "-mnt", "Mount a disk", "disk:dest", ARG_REQ_REQUIRED_VALUE, mount, NO_CONTEXT, EXIT_AFTER},
+    {"--umount", "-umnt", "Unmount a path", "path", ARG_REQ_REQUIRED_VALUE, unmount, NO_CONTEXT, EXIT_AFTER},
 };
 
 int main(int argc, char **argv) {
