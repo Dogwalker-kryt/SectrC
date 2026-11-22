@@ -145,6 +145,9 @@ bool set_standalone_true(const char *value, void *context) {
     (void)context;
     globals.stand_alone = true;
     globals.no_log = true;
+
+    free_globals();
+
     globals.log_path.path = NULL;
     globals.config_path.path = NULL;
     return true;

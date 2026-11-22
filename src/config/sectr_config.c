@@ -124,6 +124,7 @@ bool config_load(void) {
         ok = true;
     }
 
+    config_file_close();
     free(line);
     return ok;
 }
