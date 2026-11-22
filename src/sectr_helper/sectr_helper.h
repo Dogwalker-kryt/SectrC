@@ -2,15 +2,19 @@
 
 #include "../defs.h"
 #include "../globals.h"
+#include "../disk_data/disk_data.h"
+
 
 /* Same size as the name fields in drive_mt (disk_data.h). */
 #define DEVICE_NAME_SIZE 64
 
-void ul_to_str(char *buff, size_t buff_size, uint64_t d);
+int32_t ul_to_str(char *buff, size_t buff_size, uint64_t d);
 
 /* "/dev/nvme0n1", "/dev/nvme0n1/" and "nvme0n1" → "nvme0n1" in buf.
    Returns buf, or NULL (buf = "") if there is no name or it doesn't fit. */
 char *device_basename(const char *device_name, char *buf, size_t buf_size);
+
+const drive_mt *find_drive(const Vec *vec, const char *wanted);
 
 __always_inline void cpy_root_to_buff(char *buff, const char *dmgr_root) {
     strcpy(buff, dmgr_root);

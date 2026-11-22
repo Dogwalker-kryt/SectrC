@@ -3,8 +3,8 @@
 #include "../ui/ui.h"
 #include <inttypes.h>
 
-void ul_to_str(char *buff, size_t buff_size, uint64_t d) {
-    snprintf(buff, buff_size, "%" PRIu64, d);
+int32_t ul_to_str(char *buff, size_t buff_size, uint64_t d) {
+    return snprintf(buff, buff_size, "%" PRIu64, d);
 }
 
 char *device_basename(const char *device_name, char *buf, size_t buf_size) {
@@ -24,8 +24,18 @@ char *device_basename(const char *device_name, char *buf, size_t buf_size) {
     return buf;
 }
 
+const drive_mt *find_drive(const Vec *vec, const char *wanted) {
+    const drive_mt *drives = vec->data;
+    char name[DEVICE_NAME_SIZE];
+
+    for (uint32_t i = 0; i < vec->element_count; ++i) {
+        if (device_basename(drives[i].name, name, sizeof(name)) && strcmp(name, wanted) == 0) return &drives[i];
+    }
+    return NULL;
+}
+
+
 bool clear_logs(void) {
-    // the log is not opened with --stand-alone or no_log = true in the config
     if (unlikely(!globals.log_path.fd)) {
         ERR(ERRC_DataUnavailable, "Cannot clear logs", "logging is turned off (--stand-alone or no_log in the config)");
         return false;
@@ -36,7 +46,6 @@ bool clear_logs(void) {
         return false;
     }
 
-    // freopen() closes the old stream even when it fails, so the global must not keep pointing to it
     FILE *log_file = freopen(globals.log_path.path, "w+", globals.log_path.fd);
     globals_set_ptr_fd(&globals.log_path.fd, log_file);
     if (unlikely(!log_file)) {
@@ -63,7 +72,6 @@ static void print_log_line(const char *line) {
 }
 
 bool view_logs(size_t lines_to_count) {
-    // the log is not opened with --stand-alone or no_log = true in the config
     if (unlikely(!globals.log_path.fd)) {
         ERR(ERRC_DataUnavailable, "Cannot view logs", "logging is turned off (--stand-alone or no_log in the config)");
         return false;
@@ -120,6 +128,7 @@ bool view_logs(size_t lines_to_count) {
     return true;
 }
 
+
 char *convert_to_GiB(size_t bytes) {
     char buffer[32];
     double gibibytes = (double)bytes / (1024.0 * 1024.0 * 1024.0);
@@ -128,6 +137,7 @@ char *convert_to_GiB(size_t bytes) {
 
     return strdup(buffer);
 }
+
 
 char *llu_to_str(__llu value, char *buffer, size_t size) {
     int n = snprintf(buffer, size, "%llu", value);

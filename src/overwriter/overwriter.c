@@ -156,17 +156,6 @@ static bool om_perform_zeroout(int32_t fd, uint64_t size) {
     return true;
 }
 
-
-static const drive_mt *find_drive(const Vec *vec, const char *wanted) {
-    const drive_mt *drives = vec->data;
-    char name[DEVICE_NAME_SIZE];
-
-    for (uint32_t i = 0; i < vec->element_count; ++i) {
-        if (device_basename(drives[i].name, name, sizeof(name)) && strcmp(name, wanted) == 0) return &drives[i];
-    }
-    return NULL;
-}
-
 static const drive_mt *find_mounted(const Vec *vec, const drive_mt *target) {
     const drive_mt *drives = vec->data;
 

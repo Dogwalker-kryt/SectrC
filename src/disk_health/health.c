@@ -51,16 +51,6 @@
 #define ATA_ATTR_TABLE_OFFSET 2
 #define ATA_ATTR_ENTRY_SIZE 12
 
-// TODO: make this in sectr_helper
-static const drive_mt *find_drive(const Vec *vec, const char *wanted) {
-    const drive_mt *drives = vec->data;
-    char name[DEVICE_NAME_SIZE];
-
-    for (uint32_t i = 0; i < vec->element_count; ++i) {
-        if (device_basename(drives[i].name, name, sizeof(name)) && strcmp(name, wanted) == 0) return &drives[i];
-    }
-    return NULL;
-}
 
 static const drive_mt *find_whole_disk(const Vec *vec, const char *basename) {
     const drive_mt *target = find_drive(vec, basename);
@@ -291,7 +281,6 @@ static bool read_ata_smart(fd_t fd, const char *path, ata_smart_t *smart) {
     return true;
 }
 
-// TODO: in vec_init e.g embedd ERR() so that if something fails, you just use the if statement to return and then PERR() and the controll flwo does the rest
 
 bool disk_health(const char *disk_name) {
     if (!is_root()) {
