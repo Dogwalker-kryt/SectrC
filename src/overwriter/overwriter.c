@@ -216,10 +216,7 @@ bool disk_overwrite(const char *disk_name) {
     }
 
     Vec vec;
-    if (!vec_init(&vec, 8, sizeof(drive_mt))) {
-        ERR(ERRC_AllocationFault, NULL, "Failed to init vec for overwriting");
-        return false;
-    }
+    if (!vec_init(&vec, 8, sizeof(drive_mt))) return false;
     if (!get_physical_disk_info(&vec)) {
         vec_free(&vec);
         return false;

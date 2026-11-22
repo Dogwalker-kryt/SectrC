@@ -1,4 +1,5 @@
 #include "vector.h"
+#include "../Debug/sectr_err.h"
 
 bool vec_init(Vec *vec, uint32_t expected_element_count, size_t size) {
     if (unlikely(size == 0 || expected_element_count == 0 || !vec)) return false;
@@ -18,6 +19,7 @@ bool vec_init(Vec *vec, uint32_t expected_element_count, size_t size) {
         vec->buffer_size = 0;
         vec->expected_element_count = 0;
         vec->element_size = 0;
+        ERR(ERRC_AllocationFault, NULL, "Failed to allocate vector");
         return false;
     }
 

@@ -116,10 +116,7 @@ static bool list_drives(const char *value, void *context) {
     (void)context;
 
     Vec vec;
-    if (unlikely(!vec_init(&vec, 1, sizeof(drive_mt)))) {
-        ERR(ERRC_AllocationFault, NULL, "Failed to initialize drive vector");
-        return false;
-    }
+    if (unlikely(!vec_init(&vec, 1, sizeof(drive_mt)))) return false;
 
     if (unlikely(!get_physical_disk_info(&vec))) {
         vec_free(&vec);

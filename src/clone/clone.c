@@ -288,10 +288,7 @@ bool disk_clone(const char *disk_dest, const char *disk_src) {
     uint64_t dest_size = 0;
 
     Vec disks_vec;
-    if (!vec_init(&disks_vec, 8, sizeof(drive_mt))) {
-        ERR(ERRC_AllocationFault, NULL, "Failed to init vec for cloning");
-        return false;
-    }
+    if (!vec_init(&disks_vec, 8, sizeof(drive_mt))) return false;
 
     if (!get_physical_disk_info(&disks_vec)) {
         goto _exit_failure;
