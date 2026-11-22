@@ -12,6 +12,7 @@
 #include "ui/ui.h"
 #include <errno.h>
 #include "io_stats/io_stats.h"
+#include "disk_health/health.h"
 
 #ifndef SECTRC_VERSION
 #define SECTRC_VERSION "development"
@@ -59,6 +60,7 @@ static bool handle_help(const char *value, void *context) {
     print_example("-ow sdb", "erase a disk (asks first, needs sudo)");
     print_example("-cp sda:sdb", "clone sda onto sdb (asks first, needs sudo)");
     print_example("-i nvme0n1", "I/O stats of a disk since boot");
+    print_example("-hl nvme0n1", "SMART health of a disk (needs sudo)");
     print_example("-vl 20", "last 20 log lines");
 
     
@@ -169,6 +171,11 @@ static bool io_info(const char *value, void *context) {
     return io_statistics(value);
 }
 
+static bool health_info(const char *value, void *context) {
+    (void)context;
+    return disk_health(value);
+}
+
 static const args_t arg_arr[] = {
     {"--help", "-h", "Show this help message", NO_VALUE_NAME, ARG_REQ_NO_VALUE, handle_help, &help_context, EXIT_AFTER},
     {"--version", "-v", "Show the current version", NO_VALUE_NAME, ARG_REQ_NO_VALUE, print_version, NO_CONTEXT, EXIT_AFTER},
@@ -183,7 +190,8 @@ static const args_t arg_arr[] = {
     {"--fingerprint", "-fp", "Show custom sha256 fingerprint of a drive", "disk-name", ARG_REQ_REQUIRED_VALUE, fingerprint, NO_CONTEXT, EXIT_AFTER},
     {"--overwrite", "-ow", "Erase all data on a disk or partition (asks first)", "disk-name", ARG_REQ_REQUIRED_VALUE, overwrite, NO_CONTEXT, EXIT_AFTER},
     {"--clone", "-cp", "Copy a disk or partition onto another one (asks first)", "src:dest", ARG_REQ_REQUIRED_VALUE, clone_drive, NO_CONTEXT, EXIT_AFTER},
-    {"--info", "-i", "Show I/O stats of a disk or partition since boot", "disk-name", ARG_REQ_REQUIRED_VALUE, io_info, NO_CONTEXT, EXIT_AFTER}
+    {"--info", "-i", "Show I/O stats of a disk or partition since boot", "disk-name", ARG_REQ_REQUIRED_VALUE, io_info, NO_CONTEXT, EXIT_AFTER},
+    {"--health", "-hl", "Show SMART health of a SATA or NVMe disk", "disk-name", ARG_REQ_REQUIRED_VALUE, health_info, NO_CONTEXT, EXIT_AFTER},
 };
 
 int main(int argc, char **argv) {
