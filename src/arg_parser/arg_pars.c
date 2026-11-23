@@ -4,7 +4,7 @@ static const args_t *find_arg(const char *token, size_t name_length, const args_
     for (size_t i = 0; i < arg_count; ++i) {
         const char *names[] = {arg_arr[i].long_arg, arg_arr[i].short_arg};
 
-        for (size_t name_index = 0; name_index < SIZEOF_ARRAY(names); ++name_index) {
+        for (size_t name_index = 0; name_index < ARRAY_COUNT(names); ++name_index) {
 
             const char *name = names[name_index];
             if (name && strlen(name) == name_length && strncmp(token, name, name_length) == 0) {

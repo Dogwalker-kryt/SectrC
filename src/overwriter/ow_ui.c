@@ -22,7 +22,7 @@ void print_progress(uint64_t done, uint64_t total) {
 
 static const char *square_color(size_t index) {
     const char *colors[] = {PURPLE, CYAN, YELLOW, GREEN, BLUE, MAGENTA};
-    return colors[index % SIZEOF_ARRAY(colors)];
+    return colors[index % ARRAY_COUNT(colors)];
 }
 
 static void print_erase_header(const drive_mt *target, size_t children) {

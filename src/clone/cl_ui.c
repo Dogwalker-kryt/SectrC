@@ -13,7 +13,7 @@
 
 static const char *square_color(size_t index) {
     const char *colors[] = {PURPLE, CYAN, YELLOW, GREEN, BLUE, MAGENTA};
-    return colors[index % SIZEOF_ARRAY(colors)];
+    return colors[index % ARRAY_COUNT(colors)];
 }
 
 static void format_duration(double seconds, char *buf, size_t buf_size) {

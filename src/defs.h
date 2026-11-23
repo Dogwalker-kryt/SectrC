@@ -40,7 +40,7 @@ typedef unsigned long __lu;
 #define unlikely(expr) __builtin_expect(!!(expr), 0)
 #define likely(expr)   __builtin_expect(!!(expr), 1)
 
-#define SIZEOF_ARRAY(arr) (sizeof(arr) / sizeof((arr)[0]))
+#define ARRAY_COUNT(arr) (sizeof(arr) / sizeof((arr)[0]))
 
 typedef bool (*arg_fn)(const char *value, void *context);
 

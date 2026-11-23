@@ -46,7 +46,7 @@ static bool check_mountable(const Vec *vec, const drive_mt *drive) {
         return false;
     }
 
-    for (size_t i = 0; i < SIZEOF_ARRAY(unmountable); ++i) {
+    for (size_t i = 0; i < ARRAY_COUNT(unmountable); ++i) {
         if (strcmp(drive->fstype, unmountable[i][0]) != 0) continue;
         ERR(ERRC_InvalidDevice, NULL, "Cannot mount %s, it %s", drive->name, unmountable[i][1]);
         return false;

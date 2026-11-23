@@ -26,7 +26,7 @@ void ui_format_size(uint64_t bytes, char *buf, size_t buf_size) {
     double value = (double)bytes;
     size_t unit = 0;
 
-    while (value >= 1024.0 && unit < SIZEOF_ARRAY(units) - 1) {
+    while (value >= 1024.0 && unit < ARRAY_COUNT(units) - 1) {
         value /= 1024.0;
         ++unit;
     }

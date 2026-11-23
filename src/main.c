@@ -229,7 +229,7 @@ int main(int argc, char **argv) {
     }
 
     help_context.options = arg_arr;
-    help_context.option_count = SIZEOF_ARRAY(arg_arr);
+    help_context.option_count = ARRAY_COUNT(arg_arr);
 
     if (argc > 0 && argv[0][0]) {
         const char *slash = strrchr(argv[0], '/');
@@ -250,7 +250,7 @@ int main(int argc, char **argv) {
         goto _EXIT_SUCCESS;
     }
 
-    const uint8_t parse = parse_args(argc, argv, arg_arr, SIZEOF_ARRAY(arg_arr));
+    const uint8_t parse = parse_args(argc, argv, arg_arr, ARRAY_COUNT(arg_arr));
     if (unlikely((parse == UINT8_MAX))) {
         goto _EXIT_FAILIURE;
 

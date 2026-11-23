@@ -251,7 +251,7 @@ static void ata_verdict(ata_smart_t *smart) {
         return;
     }
 
-    for (size_t i = 0; i < SIZEOF_ARRAY(bad_counters); ++i) {
+    for (size_t i = 0; i < ARRAY_COUNT(bad_counters); ++i) {
         const ata_attr_t *attr = ata_find_attr(smart, bad_counters[i].id);
         if (!attr || attr->raw == 0) continue;
         smart->level = HEALTH_WARNING;
