@@ -10,6 +10,7 @@
 #define PART_COL_SIZE 9
 #define SIZE_STR_SIZE 16
 #define TIME_STR_SIZE 32
+#define NOTE_SIZE 128
 
 static const char *square_color(size_t index) {
     const char *colors[] = {PURPLE, CYAN, YELLOW, GREEN, BLUE, MAGENTA};
@@ -88,23 +89,25 @@ static void print_partitions(const Vec *vec, const drive_mt *drive, size_t name_
     }
 }
 
-static void print_side(const char *label, const Vec *vec, const drive_mt *drive, uint64_t size) {
+static void print_side(const char *label, const char *note, const char *note_color, const Vec *vec, const drive_mt *drive, uint64_t size) {
     size_t name_width = 0;
     const size_t partitions = count_partitions(vec, drive, &name_width);
 
     print_drive(label, drive, size, partitions);
+    printf("          %s%s%s\n", note_color, note, RST);
     if (partitions > 0) print_partitions(vec, drive, name_width);
 }
 
 void cl_print_plan(const Vec *vec, const drive_mt *src, const drive_mt *dest, uint64_t src_size, uint64_t dest_size) {
-    char src_name[DEVICE_NAME_SIZE], dest_name[DEVICE_NAME_SIZE];
+    char src_name[DEVICE_NAME_SIZE], dest_name[DEVICE_NAME_SIZE], dest_note[NOTE_SIZE];
     device_basename(src->name, src_name, sizeof(src_name));
     device_basename(dest->name, dest_name, sizeof(dest_name));
+    snprintf(dest_note, sizeof(dest_note), "becomes a copy of %s, its old data is replaced", src_name);
 
     printf("\n  %s%s▍ Clone%s  %s%s → %s%s\n\n", BOLD, PURPLE, RST, GRAY, src_name, dest_name, RST);
-    print_side("from", vec, src, src_size);
+    print_side("from", "only read, nothing on it changes", GRAY, vec, src, src_size);
     putchar('\n');
-    print_side("to", vec, dest, dest_size);
+    print_side("to", dest_note, YELLOW, vec, dest, dest_size);
 
     if (dest_size > src_size) {
         char rest[SIZE_STR_SIZE];
@@ -117,7 +120,7 @@ bool cl_confirm_clone(const char *src_path, const char *dest_path, uint64_t dest
     char size[SIZE_STR_SIZE];
     ui_format_size(dest_size, size, sizeof(size));
 
-    return prompt_confirm("%s%s!%s erase %sall data%s on %s%s%s%s %s(%s)%s and copy %s%s%s onto it?", BOLD, YELLOW, RST, BOLD, RST, BOLD, PURPLE, dest_path, RST, GRAY, size, RST, BOLD, src_path, RST);
+    return prompt_confirm("%s%s!%s copy %s%s%s to %s%s%s%s %s(%s)%s?", BOLD, YELLOW, RST, BOLD, src_path, RST, BOLD, PURPLE, dest_path, RST, GRAY, size, RST);
 }
 
 void cl_print_progress(uint64_t done, uint64_t total, double seconds) {
